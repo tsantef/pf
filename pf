@@ -1,15 +1,15 @@
 #!/usr/bin/php
 <?php
 
-require './lib/loader.php';
+define("WORKING_DIR", getcwd());
+
+require 'lib/loader.php';
 
 array_shift($argv);
 
-if (!CommandLine::run($argv)) {?>
-	
+if (!CommandLine::run($argv)): ?>
 Usage: pf
 
-<?}
+<? else: ?>
 
-
-?>
+<? endif; ?>
