@@ -1,0 +1,15 @@
+#!/usr/bin/php
+<?php
+
+require './lib/loader.php';
+
+array_shift($argv);
+
+if (!CommandLine::run($argv)) {?>
+	
+Usage: pf
+
+<?}
+
+
+?>
