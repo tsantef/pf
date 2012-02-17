@@ -3,8 +3,8 @@
 define("HOME", $_SERVER['HOME']);
 define("LIB_PATH", dirname(__FILE__));
 
-require 'commandline.php';
-require 'shell.php';
+require_once 'commandline.php';
+require_once 'shell.php';
 
 function command_loader($class_name) {
 
@@ -15,4 +15,6 @@ function command_loader($class_name) {
         require $path;
     }
 
-} spl_autoload_register('command_loader');
+}
+
+spl_autoload_register('command_loader');
