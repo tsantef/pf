@@ -3,7 +3,7 @@
 
 define("WORKING_DIR", getcwd());
 
-require 'lib/loader.php';
+require_once 'lib/loader.php';
 
 array_shift($argv);
 
