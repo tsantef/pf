@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 class CommandLine {
 
@@ -8,7 +8,7 @@ class CommandLine {
             return false;
         }
 
-        $command = "pf\\".str_replace("-","_",array_shift($argv));
+        $command = "pf\\".str_replace('-', '_', array_shift($argv));
 
         if (class_exists($command)) {
             return $command::run($argv);
