@@ -1,0 +1,113 @@
+#!/usr/bin/env php
+<?php
+
+define("DOWNLOAD_URL", "");
+
+process($argv);
+
+/**
+ * processes the installer
+ */
+function process($argv)
+{
+    $check = in_array('--check', $argv);
+    $help = in_array('--help', $argv);
+    $force = in_array('--force', $argv);
+
+    if ($help) {
+        displayHelp();
+        exit(0);
+    }
+
+    $ok = checkPlatform();
+
+    if ($check) {
+        exit($ok ? 0 : 1);
+    }
+
+    if ($ok || $force) {
+        installComposer();
+    }
+
+    exit(0);
+}
+
+/**
+ * displays the help
+ */
+function displayHelp()
+{
+    echo <<<EOF
+Composer Installer
+------------------
+Options
+--help   this help
+--check  for checking environment only
+--force  forces the installation
+
+EOF;
+}
+
+/**
+ * check the platform for possible issues on running composer
+ */
+function checkPlatform()
+{
+    $errors = array();
+
+    if (version_compare(PHP_VERSION, '5.3.2', '<')) {
+        $errors['php'] = PHP_VERSION;
+    }
+
+    if (!empty($errors)) {
+        out("Composer detected that you have enabled some settings in your `php.ini` file that can make Composer unable to work properly.".PHP_EOL, 'error');
+
+        echo PHP_EOL.'Make sure that you have changed options listed below:'.PHP_EOL;
+        foreach ($errors as $error => $actual) {
+            switch ($error) {
+
+                case 'php':
+                    $text = "    PHP_VERSION (actual: {$actual})".PHP_EOL;
+                    break;
+            }
+            out($text, 'info');
+        }
+        echo PHP_EOL;
+        return false;
+    }
+
+    out("All settings correct for using Composer".PHP_EOL, 'success');
+    return true;
+}
+
+/**
+ * installs composer to the current working directory
+ */
+function installComposer()
+{
+    $installDir = getcwd();
+    $file = $installDir.DIRECTORY_SEPARATOR.'composer.phar';
+
+    if (is_readable($file)) {
+        @unlink($file);
+    }
+
+    $download = copy('http://getcomposer.org/composer.phar', $file);
+
+    out(PHP_EOL."Composer successfully installed to: " . $file, 'success');
+    out(PHP_EOL."Use it: php composer.phar".PHP_EOL, 'info');
+}
+
+/**
+ * colorize output
+ */
+function out($text, $color = null)
+{
+    $styles = array(
+        'success' => "\033[0;32m%s\033[0m",
+        'error' => "\033[31;31m%s\033[0m",
+        'info' => "\033[33;33m%s\033[0m"
+    );
+
+    echo sprintf(isset($styles[$color]) ? $styles[$color] : "%s", $text);
+}

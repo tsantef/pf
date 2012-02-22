@@ -5,6 +5,8 @@ define("LIB_PATH", dirname(__FILE__));
 
 require_once 'commandline.php';
 require_once 'shell.php';
+require_once 'PestJSON.php';
+require_once 'phpfog.php';
 
 function command_loader($class_name) {
 
