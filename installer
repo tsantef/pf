@@ -3,29 +3,43 @@
 
 define("DOWNLOAD_URL", "");
 
+array_shift($argv);
 process($argv);
 
 /**
  * processes the installer
  */
-function process($argv)
-{
-    $check = in_array('--check', $argv);
-    $help = in_array('--help', $argv);
-    $force = in_array('--force', $argv);
+function process($argv) {
 
-    if ($help) {
+    # No arguments, display help text
+    if (0 === count($argv)) {
         displayHelp();
         exit(0);
     }
 
-    $ok = checkPlatform();
-
-    if ($check) {
-        exit($ok ? 0 : 1);
+    # Run through all arguments
+    foreach ($argv as $arg) {
+        switch ($arg) {
+            case '-h':
+            case '--help':
+                displayHelp();
+                exit(0);
+                break;
+            case '-c':
+            case '--check':
+                exit(checkPlatform());
+                break;
+            case '-f':
+            case '--force':
+                installComposer();
+                break;
+            default:
+                break;
+        }
     }
 
-    if ($ok || $force) {
+    # No arguments, if checkPlatform() passes, install
+    if (checkPlatform()) {
         installComposer();
     }
 
@@ -33,17 +47,16 @@ function process($argv)
 }
 
 /**
- * displays the help
+ * displays the help text
  */
-function displayHelp()
-{
+function displayHelp() {
     echo <<<EOF
 Composer Installer
 ------------------
 Options
---help   this help
---check  for checking environment only
---force  forces the installation
+-h, --help   Display this text
+-c, --check  Display the environment info
+-f, --force  Forces the installation
 
 EOF;
 }
@@ -51,8 +64,7 @@ EOF;
 /**
  * check the platform for possible issues on running composer
  */
-function checkPlatform()
-{
+function checkPlatform() {
     $errors = array();
 
     if (version_compare(PHP_VERSION, '5.3.2', '<')) {
@@ -64,27 +76,23 @@ function checkPlatform()
 
         echo PHP_EOL.'Make sure that you have changed options listed below:'.PHP_EOL;
         foreach ($errors as $error => $actual) {
-            switch ($error) {
-
-                case 'php':
-                    $text = "    PHP_VERSION (actual: {$actual})".PHP_EOL;
-                    break;
+            if ($error == 'php') {
+                $text = "    PHP_VERSION (actual: {$actual})".PHP_EOL;
             }
             out($text, 'info');
         }
         echo PHP_EOL;
-        return false;
+        return 0;
     }
 
     out("All settings correct for using Composer".PHP_EOL, 'success');
-    return true;
+    return 1;
 }
 
 /**
  * installs composer to the current working directory
  */
-function installComposer()
-{
+function installComposer() {
     $installDir = getcwd();
     $file = $installDir.DIRECTORY_SEPARATOR.'composer.phar';
 
@@ -101,8 +109,7 @@ function installComposer()
 /**
  * colorize output
  */
-function out($text, $color = null)
-{
+function out($text, $color = null) {
     $styles = array(
         'success' => "\033[0;32m%s\033[0m",
         'error' => "\033[31;31m%s\033[0m",

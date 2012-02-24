@@ -23,23 +23,24 @@ require_once 'Pest.php';
 * This code is licensed for use, modification, and distribution
 * under the terms of the MIT License (see http://en.wikipedia.org/wiki/MIT_License)
 */
-class PestJSON extends Pest
-{
-  public function post($url, $data, $headers=array()) {
-    return parent::post($url, json_encode($data), $headers);
-  }
-  
-  public function put($url, $data, $headers=array()) {
-    return parent::put($url, json_encode($data), $headers);
-  }
+class PestJSON extends Pest {
+    public function post($url, $data, $headers=array()) {
+        return parent::post($url, json_encode($data), $headers);
+    }
 
-  protected function prepRequest($opts, $url) {
-    $opts[CURLOPT_HTTPHEADER][] = 'Accept: application/json';
-    $opts[CURLOPT_HTTPHEADER][] = 'Content-Type: application/json';
-    return parent::prepRequest($opts, $url);
-  }
+    public function put($url, $data, $headers=array()) {
+        return parent::put($url, json_encode($data), $headers);
+    }
 
-  public function processBody($body) {
-    return json_decode($body, true);
-  }
+    protected function prepRequest($opts, $url) {
+        $opts[CURLOPT_HTTPHEADER][] = 'Accept: application/json';
+        $opts[CURLOPT_HTTPHEADER][] = 'Content-Type: application/json';
+        return parent::prepRequest($opts, $url);
+    }
+
+    public function processBody($body) {
+        return json_decode($body, true);
+    }
 }
+
+?>

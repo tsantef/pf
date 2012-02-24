@@ -1,6 +1,6 @@
 <?php
 namespace pf;
- 
+
 class PHPFogClient {
 
 	public $phpfog;
@@ -15,19 +15,19 @@ class PHPFogClient {
 	}
 
 
-	// --- SSH Keys ----
+	# --- SSH Keys ----
 
-  // def get_sshkeys
-  //   response = api_call do 
-  //     $phpfog.get("/ssh_keys", nil, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
-  //   end
-  //   response_body = JSON.parse(response.body)
-  //   if response.code == 200
-  //     return { :status => response.code, :message => "OK" , :body => response_body }
-  //   else
-  //     return { :status => response.code, :message => response_body["message"] , :body => response_body }
-  //   end
-  // end
+    # def get_sshkeys
+    #   response = api_call do
+    #     $phpfog.get("/ssh_keys", nil, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+    #   end
+    #   response_body = JSON.parse(response.body)
+    #   if response.code == 200
+    #     return { :status => response.code, :message => "OK" , :body => response_body }
+    #   else
+    #     return { :status => response.code, :message => response_body["message"] , :body => response_body }
+    #   end
+    # end
 
 	function get_sshkeys() {
 
@@ -47,21 +47,21 @@ class PHPFogClient {
 			return $client->phpfog->post("/dedicated_clouds", json_encode($payload), array("Api-Auth-Token: ".$client->session['api_auth_token']));
 		});
 		return $response;
-		//   response = api_call do 
-		//     payload = { 'name' => ssh_key_name, 'key' => ssh_key_key }
-		//     response = $phpfog.post("/ssh_keys", nil, JSON.generate(payload), { :accept => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
-		//   end  
-		//   response
+		#   response = api_call do
+		#     payload = { 'name' => ssh_key_name, 'key' => ssh_key_key }
+		#     response = $phpfog.post("/ssh_keys", nil, JSON.generate(payload), { :accept => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+		#   end
+		#   response
   	}
-  
-  // def delete_sshkey(sshkey_id)
-  //   response = api_call do 
-  //     response = $phpfog.delete("/ssh_keys/#{sshkey_id}", nil, { :accept => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
-  //   end  
-  //   response
-  // end
 
-	// ---
+    # def delete_sshkey(sshkey_id)
+    #   response = api_call do
+    #     response = $phpfog.delete("/ssh_keys/#{sshkey_id}", nil, { :accept => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
+    #   end
+    #   response
+    # end
+
+	# ---
 
 	public function login() {
 		$username = trim($this->prompt("PHPFog Username: "));
@@ -84,7 +84,7 @@ class PHPFogClient {
 
 	protected function api_call($block) {
 		$result = null;
-		try { 
+		try {
 			$result = is_object($block) ? $block() : $block;
 		} catch (\Pest_Unauthorized $e) {
 			if ($this->login()) {
