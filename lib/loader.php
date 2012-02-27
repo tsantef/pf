@@ -1,22 +1,8 @@
 <?php
 
-define("HOME", $_SERVER['HOME']);
-define("LIB_PATH", dirname(__FILE__));
+define("HOME", $_SERVER['HOME'].'/');
+define("LIB_PATH", basename(dirname(__FILE__)).'/');
 
-require_once 'commandline.php';
-require_once 'shell.php';
-require_once 'PestJSON.php';
-require_once 'phpfog.php';
-
-function command_loader($class_name) {
-
-    $class_name = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $class_name);
-    $path = join(DIRECTORY_SEPARATOR, array(LIB_PATH, $class_name.".php"));
-
-    if (file_exists($path)) {
-        require $path;
-    }
-
+foreach (glob(LIB_PATH."deps/*.php") as $dep) {
+    require_once $dep;
 }
-
-spl_autoload_register('command_loader');
