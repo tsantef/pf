@@ -3,7 +3,6 @@
 
 define("DOWNLOAD_URL", "");
 
-array_shift($argv);
 process($argv);
 
 /**
