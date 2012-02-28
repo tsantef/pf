@@ -1,15 +1,20 @@
 <?php
 namespace pf;
 
-class PHPFogClient {
+class PHPFog {
 
     public $phpfog;
-    public $username;
-    public $api_auth_token;
+    public $username = null;
+    public $api_auth_token = null;
+    public $session = null;
+    private $session_path = ".pf-command-session";
 
     public function __construct() {
         $this->load_session();
-        $this->phpfog = new \PestJSON(($_ENV["PHPFOG_URL"] != "") ? $_ENV["PHPFOG_URL"] : "https://www.phpfog.com");
+        $this->phpfog = new \PestJSON((isset($_ENV['PHPFOG_URL']) && $_ENV['PHPFOG_URL'] != "") ? $_ENV['PHPFOG_URL'] : "https://www.phpfog.com");
+        if ($this->session == null) {
+            $this->login();
+        }
     }
 
 
@@ -89,27 +94,43 @@ class PHPFogClient {
         return $result;
     }
 
-    function prompt($msg, $isPassword = false) {
-        echo "$msg";
-        return fgets(fopen('php://stdin', 'r'));
+    function prompt($prompt, $pw = false) {
+        if (!$pw) {
+            echo $prompt;
+            return fgets(fopen('php://stdin', 'r'));
+        }
+        # If client is using Windows OS
+        if (preg_match('/^win/i', PHP_OS)) {
+            $vbscript = sys_get_temp_dir() . 'prompt_password.vbs';
+            file_put_contents($vbscript, 'wscript.echo(InputBox("'.addslashes($prompt).'", "", "password here"))');
+            $command = "cscript //nologo " . escapeshellarg($vbscript);
+            $password = rtrim(shell_exec($command));
+            unlink($vbscript);
+            return $password;
+        } else {
+            # IF *nix-based
+            $command = "/usr/bin/env bash -c 'echo OK'";
+            if (rtrim(shell_exec($command)) !== 'OK') {
+                trigger_error("Can't invoke bash");
+                return;
+            }
+            $command = "/usr/bin/env bash -c 'read -s -p \"".addslashes($prompt)."\" mypassword && echo \$mypassword'";
+            $password = rtrim(shell_exec($command));
+            echo PHP_EOL;
+            return $password;
+        }
     }
 
-    function session_path() {
-        return ".pf-command-session";
-    }
-
-    public $session;
     function load_session() {
-        try {
-            $string = file_get_contents($this->session_path());
-            $this->session = json_decode($string, true);
-        } catch (Exception $e) {
+        if (file_exists($this->session_path)) {
+            $this->session = json_decode(file_get_contents($this->session_path), true);
+        } else {
             $this->session = array();
         }
     }
 
     function save_session() {
-        file_put_contents($this->session_path(), json_encode($this->session));
+        file_put_contents($this->session_path, json_encode($this->session));
     }
 
 }

@@ -95,7 +95,7 @@ class PestJSON {
     protected function processBody($body) {
         # The body of every GET/POST/PUT/DELETE response goes through
         # here prior to being returned.
-        return json_decode($body);
+        return json_decode($body, true);
     }
 
     protected function processError($body) {
@@ -207,7 +207,7 @@ class PestJSON {
     }
 }
 
-class PestJSON_Exception extends Exception {}
+class PestJSON_Exception extends \Exception {}
 class PestJSON_UnknownResponse extends PestJSON_Exception {}
 class PestJSON_ClientError extends PestJSON_Exception {}
 class PestJSON_BadRequest extends PestJSON_ClientError {}
