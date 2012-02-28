@@ -3,7 +3,9 @@
 # Run a shell command
 function execute($cmd, &$output = null) {
     exec($cmd, $output_array = null, $exit_code = null);
-    $output = join("\n", $output_array);
+    if (is_array($output_array)) { 
+        $output = join("\n", $output_array);
+    }
     return $exit_code;
 }
 
@@ -49,4 +51,10 @@ function rm_rf($dir) {
         reset($objects);
         rmdir($dir);
     }
+}
+
+# Prompt for input
+function prompt($msg, $isPassword = false) {
+    echo "$msg";
+    return fgets(fopen('php://stdin', 'r'));
 }

@@ -1,18 +1,16 @@
 #!/usr/bin/env php
 <?php
 
-define("DOWNLOAD_URL", "");
+define("DS", DIRECTORY_SEPARATOR);
+define("DOWNLOAD_URL", "https://github.com/tsantef/pf/zipball/master");
 
 process($argv);
 
-/**
- * processes the installer
- */
 function process($argv) {
 
     # No arguments, display help text
     if (0 === count($argv)) {
-        displayHelp();
+        display_help();
         exit(0);
     }
 
@@ -21,25 +19,25 @@ function process($argv) {
         switch ($arg) {
             case '-h':
             case '--help':
-                displayHelp();
+                display_help();
                 exit(0);
                 break;
             case '-c':
             case '--check':
-                exit(checkPlatform());
+                exit(check_platform());
                 break;
             case '-f':
             case '--force':
-                installComposer();
+                install();
                 break;
             default:
                 break;
         }
     }
 
-    # No arguments, if checkPlatform() passes, install
-    if (checkPlatform()) {
-        installComposer();
+    # No arguments, if check_platform() passes, install
+    if (check_platform()) {
+        install();
     }
 
     exit(0);
@@ -48,7 +46,7 @@ function process($argv) {
 /**
  * displays the help text
  */
-function displayHelp() {
+function display_help() {
     echo <<<EOF
 Composer Installer
 ------------------
@@ -60,10 +58,7 @@ Options
 EOF;
 }
 
-/**
- * check the platform for possible issues on running composer
- */
-function checkPlatform() {
+function check_platform() {
     $errors = array();
 
     if (version_compare(PHP_VERSION, '5.3.2', '<')) {
@@ -88,26 +83,37 @@ function checkPlatform() {
     return 1;
 }
 
-/**
- * installs composer to the current working directory
- */
-function installComposer() {
-    $installDir = getcwd();
-    $file = $installDir.DIRECTORY_SEPARATOR.'composer.phar';
 
-    if (is_readable($file)) {
-        @unlink($file);
+function install() {
+
+    $install_dir = str_replace("/", DS, "/usr/local/phpfog/pf");
+
+    if (!is_dir($install_dir) && !mkdir($install_dir, 0777, true)) {
+        die('Failed to create installation folder');
     }
 
-    $download = copy('http://getcomposer.org/composer.phar', $file);
+    $zip = new ZipArchive;
+    $res = $zip->open(’my_zip_file.zip’);
+    if ($res === TRUE) {
+        $zip->extractTo(’my_extract_to_dir/’);
+        $zip->close();
+        echo ‘ok’;
+    } else {
+        echo ‘failed’;
+    }
 
-    out(PHP_EOL."Composer successfully installed to: " . $file, 'success');
-    out(PHP_EOL."Use it: php composer.phar".PHP_EOL, 'info');
+    $file = $installDir.DIRECTORY_SEPARATOR.'composer.phar';
+
+    // if (is_readable($file)) {
+    //     @unlink($file);
+    // }
+
+    // $download = copy('http://getcomposer.org/composer.phar', $file);
+
+    // out(PHP_EOL."Composer successfully installed to: " . $file, 'success');
+    // out(PHP_EOL."Use it: php composer.phar".PHP_EOL, 'info');
 }
 
-/**
- * colorize output
- */
 function out($text, $color = null) {
     $styles = array(
         'success' => "\033[0;32m%s\033[0m",

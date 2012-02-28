@@ -1,10 +1,8 @@
 <?php
-namespace pf;
 
 class PHPFogClient {
 
     public $phpfog;
-    public $username;
     public $api_auth_token;
 
     public function __construct() {
@@ -38,9 +36,9 @@ class PHPFogClient {
 
     function new_sshkey($ssh_key_name, $ssh_key_key) {
         $client = $this;
-        $payload = array('name' => ssh_key_name, 'key' => ssh_key_key );
-        $response = $this->api_call(function() use ($client) {
-            return $client->phpfog->post("/dedicated_clouds", $payload, array("Api-Auth-Token: ".$client->session['api_auth_token']));
+        $payload = array('name' => $ssh_key_name, 'key' => $ssh_key_key );
+        $response = $this->api_call(function() use ($client, $payload) {
+            return $client->phpfog->post("/ssh_keys", $payload, array("Api-Auth-Token: ".$client->session['api_auth_token']));
         });
         return $response;
         #   response = api_call do
@@ -60,18 +58,29 @@ class PHPFogClient {
     # ---
 
     public function login() {
-        $username = trim($this->prompt("PHPFog Username: "));
-        $password = trim($this->prompt("PHPFog Password: ", true));
+        $username = trim(prompt("PHPFog Username: "));
+        $password = trim(prompt("PHPFog Password: ", true));
         $payload = array('login' => $username, 'password' => $password);
         $response = $this->phpfog->post("/user_session", $payload);
-
         if ($this->phpfog->lastStatus() == 201) {
-            $this->session['api_auth_token'] = $response['api-auth-token'];
+            $this->session['api_auth_token'] = $response->{'api-auth-token'};
             $this->session['username'] = $username;
             $this->save_session();
             return true;
         }
         return false;
+    }
+
+    public function username() {
+        return $this->session['username'];
+    }
+
+    public function last_status() {
+         return $this->phpfog->lastStatus();
+    }
+
+    public function last_response() {
+        return $this->phpfog->last_response;
     }
 
     protected function api_call($block) {
@@ -87,11 +96,6 @@ class PHPFogClient {
         }
 
         return $result;
-    }
-
-    function prompt($msg, $isPassword = false) {
-        echo "$msg";
-        return fgets(fopen('php://stdin', 'r'));
     }
 
     function session_path() {

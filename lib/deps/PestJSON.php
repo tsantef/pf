@@ -48,7 +48,11 @@ class PestJSON {
         $curl_opts = $this->curl_opts;
         $curl_opts[CURLOPT_CUSTOMREQUEST] = 'POST';
         $headers[] = 'Content-Length: '.strlen($data);
+        $curl_opts[CURLOPT_HEADER] = false;
         $curl_opts[CURLOPT_HTTPHEADER] = $headers;
+        $curl_opts[CURLOPT_RETURNTRANSFER] = true;
+
+        $curl_opts[CURLOPT_POST] = true;
         $curl_opts[CURLOPT_POSTFIELDS] = $data;
 
         $curl = $this->prepRequest($curl_opts, $url);

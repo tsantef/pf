@@ -12,6 +12,8 @@ class CommandLine {
         if (file_exists($cmd_file)) {
             require_once $cmd_file;
             $cmd($argv);
+        } else {
+            return false;
         }
 
         return true;
