@@ -82,6 +82,7 @@ function install() {
     $source_package = tempnam("","");
 
     info('Preparing installation directory...'.PHP_EOL);
+    rrmdir(INSTALL_DIR);
     if (!is_dir(INSTALL_DIR) && !mkdir(INSTALL_DIR, 0777, true)) {
         error('Failed to create installation folder.'.PHP_EOL);
         exit(1);
@@ -120,7 +121,7 @@ function install() {
     }
 
     @unlink(BIN_DIR."pf");
-    
+
     if (!@chmod(INSTALL_DIR."bin".DS."pf", 0755)) {
         error('Failed to set permissions.'.PHP_EOL);
         exit(1);
@@ -133,6 +134,20 @@ function install() {
 
     success('Installation Successfull.'.PHP_EOL);
 }
+
+function rrmdir($dir) {
+    if (is_dir($dir)) {
+        $ignore = array('.', '..');
+        $objects = scandir($dir);
+        foreach ($objects as $object) {
+            if (!in_array($object, $ignore)) {
+                if (filetype($dir.DS.$object) == "dir") rrmdir($dir.DS.$object); else unlink($dir.DS.$object);
+            }
+        }
+        reset($objects);
+        rmdir($dir);
+    }
+ }
 
 function success($message) {
     echo sprintf("\033[0;32m%s\033[0m", $message); 
