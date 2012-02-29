@@ -1,13 +1,16 @@
 #!/usr/bin/env php
 <?php
 
+define("DS", DIRECTORY_SEPARATOR);
 define("WORKING_DIR", getcwd());
+
+define("LIB_PATH", dirname(__FILE__).DS.'..'.DS.'lib'.DS);
 
 # Fix the arguments and count
 array_shift($argv);
 
 # Load everything after fixing arguments
-require_once 'lib/loader.php';
+require_once LIB_PATH.'loader.php';
 
 if (!CommandLine::run($argv)) {
     echo <<<EOF

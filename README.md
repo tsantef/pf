@@ -6,4 +6,4 @@
 
 Download and install the pf command line tool
 
-    curl -L http://tinyurl.com/7md6n7k | php
+    curl -sL http://tinyurl.com/7md6n7k | sudo php
