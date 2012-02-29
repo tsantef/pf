@@ -3,7 +3,9 @@
 
 define("DS", DIRECTORY_SEPARATOR);
 define("DOWNLOAD_URL", "https://github.com/tsantef/pf/zipball/master");
+define("INSTALL_DIR", "/usr/local/phpfog/pf");
 
+array_shift($argv);
 process($argv);
 
 function process($argv) {
@@ -86,7 +88,7 @@ function check_platform() {
 
 function install() {
 
-    $install_dir = str_replace("/", DS, "/usr/local/phpfog/pf");
+    $install_dir = str_replace("/", DS, INSTALL_DIR);
 
     if (!is_dir($install_dir) && !mkdir($install_dir, 0777, true)) {
         die('Failed to create installation folder');
@@ -104,11 +106,11 @@ function install() {
 
     $file = $installDir.DIRECTORY_SEPARATOR.'composer.phar';
 
-    // if (is_readable($file)) {
-    //     @unlink($file);
-    // }
+    if (is_readable($file)) {
+        unlink($file);
+    }
 
-    // $download = copy('http://getcomposer.org/composer.phar', $file);
+    $download = copy(DOWNLOAD_URL, $file);
 
     // out(PHP_EOL."Composer successfully installed to: " . $file, 'success');
     // out(PHP_EOL."Use it: php composer.phar".PHP_EOL, 'info');

@@ -9,7 +9,7 @@ array_shift($argv);
 # Load everything after fixing arguments
 require_once 'lib/loader.php';
 
-if (!CommandLine::run($argv, count($argv))) {
+if (!CommandLine::run($argv)) {
     echo <<<EOF
 Usage: pf list <list_command>
        pf clone <app_id>
