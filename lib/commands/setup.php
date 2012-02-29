@@ -4,11 +4,19 @@ function pf_setup($argv) {
 
     # Check if git is installed
     $has_git = has_bin('git');
-    echo 'Git Installed? '.($has_git?'yes':'no').PHP_EOL;
+    if (!$has_git) {
+        echo "You need to install git before continuing!".PHP_EOL;
+        echo "Download and install git from: http://code.google.com/p/git-osx-installer/".PHP_EOL;
+        echo "After installing git run this setup in a new terminal window.".PHP_EOL;
+        return true;
+    }
     
     # Check if ssh-kegen is installed
     $has_ssh = has_bin('ssh-keygen');
-    echo 'SSH Keygen Installed? '.($has_ssh?'yes':'no').PHP_EOL;
+    if (!$has_git) {
+        echo "You need to install ssh before continuing!".PHP_EOL;
+        return true;
+    }
 
     # Test Connection to PHPFog API
     $phpfog = new PHPFog();
@@ -38,11 +46,11 @@ function pf_setup($argv) {
 
     try {
         $phpfog->new_sshkey("", $pubkey);
+        echo "Successfully installed ssh key.";
     } catch(PestJSON_ClientError $e) {
-        var_dump ($phpfog->last_response());
+        echo "Failed to install ssh key.";
     }
-    
-    # Upload ssh key
+
 }
 
 function has_bin($name) {
