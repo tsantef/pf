@@ -1,11 +1,10 @@
-#!/usr/bin/env php
 <?php
 
 define("DS", DIRECTORY_SEPARATOR);
 define("DOWNLOAD_URL", "https://github.com/tsantef/pf/zipball/master");
-define("INSTALL_DIR", "/usr/local/phpfog/pf");
+define("INSTALL_DIR", str_replace("/", DS, "/Users/tsantef/pftest")); #"/usr/local/phpfog/pf"
+define("BIN_DIR", str_replace("/", DS, "/usr/bin"));
 
-array_shift($argv);
 process($argv);
 
 function process($argv) {
@@ -50,8 +49,8 @@ function process($argv) {
  */
 function display_help() {
     echo <<<EOF
-Composer Installer
-------------------
+pf Installer
+------------
 Options
 -h, --help   Display this text
 -c, --check  Display the environment info
@@ -87,33 +86,62 @@ function check_platform() {
 
 
 function install() {
+    $source_package = "/Users/tsantef/test.zip";
 
-    $install_dir = str_replace("/", DS, INSTALL_DIR);
-
-    if (!is_dir($install_dir) && !mkdir($install_dir, 0777, true)) {
-        die('Failed to create installation folder');
+    info('Preparing installation directory...'.PHP_EOL);
+    if (!is_dir(INSTALL_DIR) && !mkdir(INSTALL_DIR, 0777, true)) {
+        error('Failed to create installation folder.'.PHP_EOL);
+        exit(1);
     }
 
+    info('Downloading source package...'.PHP_EOL);
+    if (!copy(DOWNLOAD_URL, $source_package)) {
+        error('Failed to download installation package.'.PHP_EOL);
+        exit(1);
+    }
+
+    info('Unpacking...'.PHP_EOL);
     $zip = new ZipArchive;
-    $res = $zip->open(’my_zip_file.zip’);
+    $res = $zip->open($source_package);
     if ($res === TRUE) {
-        $zip->extractTo(’my_extract_to_dir/’);
+        $zip->extractTo(INSTALL_DIR.DS);
         $zip->close();
-        echo ‘ok’;
     } else {
-        echo ‘failed’;
+        error('Failed unpack download.'.PHP_EOL);
+        exit(1);
     }
 
-    $file = $installDir.DIRECTORY_SEPARATOR.'composer.phar';
-
-    if (is_readable($file)) {
-        unlink($file);
+    # Remove the package files out of the package folder
+    $package_contents = glob(INSTALL_DIR.DS.'*');
+    $ignore = array('.', '..');
+    if (1 === count($package_contents)) {
+        $inner_folder = $package_contents[0];
+        foreach (array_merge(glob($inner_folder.DS.'.*'), glob($inner_folder.DS.'*')) as $filename) {
+            $basename = basename($filename);
+            if (!in_array($basename, $ignore)) {
+                rename($filename, INSTALL_DIR.DS.$basename);
+            }
+        }
+        rmdir($inner_folder);
+    }
+echo INSTALL_DIR.DS."bin".DS."pf" ."  ". BIN_DIR.DS."pf";
+    if (!@symlink(INSTALL_DIR.DS."bin".DS."pf", BIN_DIR.DS."pf")) {
+        error('Failed install pf bin file. Try using sudo'.PHP_EOL);
+        exit(1);
     }
 
-    $download = copy(DOWNLOAD_URL, $file);
+    info('Cleaning up...'.PHP_EOL);
+    if (is_readable($source_package)) {
+        unlink($source_package);
+    }
+}
 
-    // out(PHP_EOL."Composer successfully installed to: " . $file, 'success');
-    // out(PHP_EOL."Use it: php composer.phar".PHP_EOL, 'info');
+function info($message) {
+    echo sprintf("\033[0;36m%s\033[0m", $message); 
+}
+
+function error($message) {
+    echo sprintf("\033[31;31m%s\033[0m", $message);
 }
 
 function out($text, $color = null) {

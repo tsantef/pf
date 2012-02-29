@@ -11,7 +11,7 @@ function pf_setup($argv) {
     echo 'SSH Keygen Installed? '.($has_ssh?'yes':'no').PHP_EOL;
 
     # Test Connection to PHPFog API
-    $phpfog = new PHPFogClient();
+    $phpfog = new PHPFog();
     try {
         $has_api = $phpfog->login();
     } catch (Exception $e) {}
