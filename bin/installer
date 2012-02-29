@@ -2,18 +2,14 @@
 
 define("DS", DIRECTORY_SEPARATOR);
 define("DOWNLOAD_URL", "https://github.com/tsantef/pf/zipball/master");
-define("INSTALL_DIR", str_replace("/", DS, "/Users/tsantef/pftest")); #"/usr/local/phpfog/pf"
-define("BIN_DIR", str_replace("/", DS, "/usr/bin"));
+define("INSTALL_DIR", str_replace("/", DS, "/Users/tsantef/pftest/")); #"/usr/local/phpfog/pf"
+define("BIN_DIR", str_replace("/", DS, "/usr/bin/"));
+
+array_shift($argv);
 
 process($argv);
 
 function process($argv) {
-
-    # No arguments, display help text
-    if (0 === count($argv)) {
-        display_help();
-        exit(0);
-    }
 
     # Run through all arguments
     foreach ($argv as $arg) {
@@ -36,7 +32,6 @@ function process($argv) {
         }
     }
 
-    # No arguments, if check_platform() passes, install
     if (check_platform()) {
         install();
     }
@@ -67,7 +62,6 @@ function check_platform() {
     }
 
     if (!empty($errors)) {
-        out("Composer detected that you have enabled some settings in your `php.ini` file that can make Composer unable to work properly.".PHP_EOL, 'error');
 
         echo PHP_EOL.'Make sure that you have changed options listed below:'.PHP_EOL;
         foreach ($errors as $error => $actual) {
@@ -80,13 +74,12 @@ function check_platform() {
         return 0;
     }
 
-    out("All settings correct for using Composer".PHP_EOL, 'success');
+    success("All settings correct for using pf".PHP_EOL);
     return 1;
 }
 
-
 function install() {
-    $source_package = "/Users/tsantef/test.zip";
+    $source_package = tempnam("","");
 
     info('Preparing installation directory...'.PHP_EOL);
     if (!is_dir(INSTALL_DIR) && !mkdir(INSTALL_DIR, 0777, true)) {
@@ -104,36 +97,45 @@ function install() {
     $zip = new ZipArchive;
     $res = $zip->open($source_package);
     if ($res === TRUE) {
-        $zip->extractTo(INSTALL_DIR.DS);
+        $zip->extractTo(INSTALL_DIR);
         $zip->close();
     } else {
         error('Failed unpack download.'.PHP_EOL);
         exit(1);
     }
+    unlink($source_package); # remove tempfile
 
     # Remove the package files out of the package folder
-    $package_contents = glob(INSTALL_DIR.DS.'*');
+    $package_contents = glob(INSTALL_DIR.'*');
     $ignore = array('.', '..');
     if (1 === count($package_contents)) {
         $inner_folder = $package_contents[0];
         foreach (array_merge(glob($inner_folder.DS.'.*'), glob($inner_folder.DS.'*')) as $filename) {
             $basename = basename($filename);
             if (!in_array($basename, $ignore)) {
-                rename($filename, INSTALL_DIR.DS.$basename);
+                rename($filename, INSTALL_DIR.$basename);
             }
         }
         rmdir($inner_folder);
     }
-echo INSTALL_DIR.DS."bin".DS."pf" ."  ". BIN_DIR.DS."pf";
-    if (!@symlink(INSTALL_DIR.DS."bin".DS."pf", BIN_DIR.DS."pf")) {
+
+    unlink(BIN_DIR."pf");
+
+    if (!chmod(INSTALL_DIR."bin".DS."pf", 0755)) {
+        error('Failed to set permissions. Try using sudo'.PHP_EOL);
+        exit(1);
+    }
+
+    if (!symlink(INSTALL_DIR."bin".DS."pf", BIN_DIR."pf")) {
         error('Failed install pf bin file. Try using sudo'.PHP_EOL);
         exit(1);
     }
 
-    info('Cleaning up...'.PHP_EOL);
-    if (is_readable($source_package)) {
-        unlink($source_package);
-    }
+    success('Installation Successfull.'.PHP_EOL);
+}
+
+function success($message) {
+    echo sprintf("\033[0;32m%s\033[0m", $message); 
 }
 
 function info($message) {
@@ -142,14 +144,4 @@ function info($message) {
 
 function error($message) {
     echo sprintf("\033[31;31m%s\033[0m", $message);
-}
-
-function out($text, $color = null) {
-    $styles = array(
-        'success' => "\033[0;32m%s\033[0m",
-        'error' => "\033[31;31m%s\033[0m",
-        'info' => "\033[33;33m%s\033[0m"
-    );
-
-    echo sprintf(isset($styles[$color]) ? $styles[$color] : "%s", $text);
 }
