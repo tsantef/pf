@@ -2,7 +2,7 @@
 
 define("DS", DIRECTORY_SEPARATOR);
 define("DOWNLOAD_URL", "https://github.com/tsantef/pf/zipball/master");
-define("INSTALL_DIR", str_replace("/", DS, "/Users/tsantef/pftest/")); #"/usr/local/phpfog/pf"
+define("INSTALL_DIR", str_replace("/", DS, "/usr/local/phpfog/pf/"));
 define("BIN_DIR", str_replace("/", DS, "/usr/bin/"));
 
 array_shift($argv);
@@ -119,15 +119,15 @@ function install() {
         rmdir($inner_folder);
     }
 
-    unlink(BIN_DIR."pf");
-
-    if (!chmod(INSTALL_DIR."bin".DS."pf", 0755)) {
-        error('Failed to set permissions. Try using sudo'.PHP_EOL);
+    @unlink(BIN_DIR."pf");
+    
+    if (!@chmod(INSTALL_DIR."bin".DS."pf", 0755)) {
+        error('Failed to set permissions.'.PHP_EOL);
         exit(1);
     }
 
-    if (!symlink(INSTALL_DIR."bin".DS."pf", BIN_DIR."pf")) {
-        error('Failed install pf bin file. Try using sudo'.PHP_EOL);
+    if (!@symlink(INSTALL_DIR."bin".DS."pf", BIN_DIR."pf")) {
+        error('Failed install pf bin file.'.PHP_EOL);
         exit(1);
     }
 
