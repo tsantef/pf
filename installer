@@ -1,0 +1,123 @@
+#!/usr/bin/env php
+<?php
+
+define("DS", DIRECTORY_SEPARATOR);
+define("DOWNLOAD_URL", "https://github.com/tsantef/pf/zipball/master");
+define("INSTALL_DIR", "/usr/local/phpfog/pf");
+
+array_shift($argv);
+process($argv);
+
+function process($argv) {
+
+    # No arguments, display help text
+    if (0 === count($argv)) {
+        display_help();
+        exit(0);
+    }
+
+    # Run through all arguments
+    foreach ($argv as $arg) {
+        switch ($arg) {
+            case '-h':
+            case '--help':
+                display_help();
+                exit(0);
+                break;
+            case '-c':
+            case '--check':
+                exit(check_platform());
+                break;
+            case '-f':
+            case '--force':
+                install();
+                break;
+            default:
+                break;
+        }
+    }
+
+    # No arguments, if check_platform() passes, install
+    if (check_platform()) {
+        install();
+    }
+
+    exit(0);
+}
+
+/**
+ * displays the help text
+ */
+function display_help() {
+    echo <<<EOF
+PF Installer
+------------
+Options
+-h, --help   Display this text
+-c, --check  Display the environment info
+-f, --force  Forces the installation
+
+EOF;
+}
+
+function check_platform() {
+    $errors = array();
+
+    if (version_compare(PHP_VERSION, '5.3.2', '<')) {
+        $errors['php'] = PHP_VERSION;
+    }
+
+    if (!empty($errors)) {
+        echo PHP_EOL.'Make sure that you have changed options listed below:'.PHP_EOL;
+        foreach ($errors as $error => $actual) {
+            if ($error == 'php') {
+                $text = "    PHP_VERSION (actual: {$actual})".PHP_EOL;
+            }
+            out($text, 'info');
+        }
+        echo PHP_EOL;
+        return 0;
+    }
+
+    out("All settings correct for using pf".PHP_EOL, 'success');
+    return 1;
+}
+
+
+function install() {
+
+    $install_dir = str_replace("/", DS, INSTALL_DIR);
+
+    if (!is_dir($install_dir) && !mkdir($install_dir, 0777, true)) {
+        die('Failed to create installation folder');
+    }
+
+    $zip = new ZipArchive;
+    $res = $zip->open(’my_zip_file.zip’);
+    if ($res === TRUE) {
+        $zip->extractTo(’my_extract_to_dir/’);
+        $zip->close();
+        echo ‘ok’;
+    } else {
+        echo ‘failed’;
+    }
+
+    $file = $installDir.DIRECTORY_SEPARATOR.'composer.phar';
+
+    if (is_readable($file)) {
+        unlink($file);
+    }
+
+    $download = copy(DOWNLOAD_URL, $file);
+
+}
+
+function out($text, $color = null) {
+    $styles = array(
+        'success' => "\033[0;32m%s\033[0m",
+        'error' => "\033[31;31m%s\033[0m",
+        'info' => "\033[33;33m%s\033[0m"
+    );
+
+    echo sprintf(isset($styles[$color]) ? $styles[$color] : "%s", $text);
+}

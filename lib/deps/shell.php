@@ -1,8 +1,10 @@
 <?php
 
 # Run a shell command
-function execute($cmd, &$output = null) {
-    exec($cmd, $output_array = null, $exit_code = null);
+function execute($cmd, &$output=null) {
+    $output_array = null;
+    $exit_code = null;
+    exec($cmd, $output_array, $exit_code);
     if (is_array($output_array)) { 
         $output = join("\n", $output_array);
     }

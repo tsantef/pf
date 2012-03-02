@@ -1,7 +1,8 @@
 <?php
 
+define("PLATFORM", platform());
 define("DS", DIRECTORY_SEPARATOR);
-define("DOWNLOAD_URL", "https://github.com/tsantef/pf/zipball/master");
+define("DOWNLOAD_URL", "http://github.com/tsantef/pf/zipball/master");
 define("INSTALL_DIR", str_replace("/", DS, "/usr/local/phpfog/pf/"));
 define("BIN_DIR", str_replace("/", DS, "/usr/bin/"));
 
@@ -21,7 +22,7 @@ function process($argv) {
                 break;
             case '-c':
             case '--check':
-                exit(check_platform());
+                exit(check_deps());
                 break;
             case '-f':
             case '--force':
@@ -32,49 +33,35 @@ function process($argv) {
         }
     }
 
-    if (check_platform()) {
+    if (check_deps()) {
         install();
     }
 
     exit(0);
 }
 
-/**
- * displays the help text
- */
-function display_help() {
-    echo <<<EOF
-pf Installer
-------------
-Options
--h, --help   Display this text
--c, --check  Display the environment info
--f, --force  Forces the installation
-
-EOF;
-}
-
-function check_platform() {
+function check_deps() {
     $errors = array();
 
+    if (PLATFORM <> OSX) {
+        $errors[] = "The current os (".php_uname('s').") is not supported";
+    }
+
     if (version_compare(PHP_VERSION, '5.3.2', '<')) {
-        $errors['php'] = PHP_VERSION;
+        $errors[] = "Minimum required php version not met.";
     }
 
     if (!empty($errors)) {
 
-        echo PHP_EOL.'Make sure that you have changed options listed below:'.PHP_EOL;
-        foreach ($errors as $error => $actual) {
-            if ($error == 'php') {
-                $text = "    PHP_VERSION (actual: {$actual})".PHP_EOL;
-            }
-            out($text, 'info');
+        echo 'PF cannot be installed for the following reasons:'.PHP_EOL;
+        foreach ($errors as $error) {
+            error("    $error".PHP_EOL);
         }
         echo PHP_EOL;
         return 0;
     }
 
-    success("All settings correct for using pf".PHP_EOL);
+    success("All settings correct for using PF".PHP_EOL);
     return 1;
 }
 
@@ -149,14 +136,37 @@ function rrmdir($dir) {
     }
  }
 
-function success($message) {
-    echo sprintf("\033[0;32m%s\033[0m", $message); 
+function success($message) { echo colorize($message, 32); }
+function info($message) { echo colorize($message, 36); }
+function error($message) { echo colorize($message, 31); }
+
+function colorize($str, $color) {
+    return sprintf("\033[0;".$color."m%s\033[0m", $str);
 }
 
-function info($message) {
-    echo sprintf("\033[0;36m%s\033[0m", $message); 
+function platform() {
+    define("OSX", 'osx');
+    define("WINDOWS", 'windows');
+    define("OTHER", 'other');
+    switch (strtoupper(php_uname('s'))) {
+        case 'DARWIN':
+            return OSX;
+        break;
+        default:
+            return OTHER;
+        break;
+    }
+    return 'windows';
 }
 
-function error($message) {
-    echo sprintf("\033[31;31m%s\033[0m", $message);
+function display_help() {
+    echo <<<EOF
+PF Installer
+------------
+Options
+-h, --help   Display this text
+-c, --check  Display the environment info
+-f, --force  Forces the installation
+
+EOF;
 }
