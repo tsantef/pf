@@ -32,18 +32,6 @@ To deploy an app using git submodules
 
 	pf update
 	
-#### List
-
-Lists apps and sshkeys
-
-##### List Apps
-
-    pf list apps [<cloud_id>|shared]
-    
-##### List SSH Keys
-
-    pf list sshkeys
-	
 #### Whoami
 
 Shows the current username logged in.
