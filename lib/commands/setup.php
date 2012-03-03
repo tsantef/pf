@@ -25,16 +25,18 @@ function pf_setup($argv) {
     } catch (Exception $e) {}
     if (!$has_api) { die('Failed to login'.PHP_EOL); }	
 
+    $ssh_identifier = preg_replace("/[^A-Za-z0-9-]/", "-", $phpfog->username());
+
     # Create an ssh key
     $ssh_path = realpath(HOME.".ssh");
-    $ssh_key_name = $ssh_path."/".$phpfog->username();
-    $ssh_identifier = preg_replace("/[^A-Za-z0-9-]/", "-", $phpfog->username());
-    if (!file_exists($ssh_key_name)) {
+    $ssh_key_name = "~/.ssh/$ssh_identifier";
+    $ssh_real_path = realpath(HOME.".ssh/$ssh_identifier");
+    if (!file_exists($ssh_real_path)) {
         $exit_code = execute("ssh-keygen -q -t rsa -b 2048 -f $ssh_key_name");
         if ($exit_code != 0) {
             die('Failed to generate ssh key');
         }
-        $fh = fopen("$ssh_path/config", 'a') or die("can't open file");    
+        $fh = fopen("$ssh_path/config", 'a') or die("can't open file".PHP_EOL);    
         fwrite($fh,"Host $ssh_identifier".PHP_EOL);
         fwrite($fh,"    HostName git01.phpfog.com".PHP_EOL);
         fwrite($fh,"    User git".PHP_EOL);
@@ -42,7 +44,7 @@ function pf_setup($argv) {
         fclose($fh);
     }
 
-    $pubkey = file_get_contents($ssh_key_name.".pub");
+    $pubkey = file_get_contents($ssh_real_path.".pub");
 
     try {
         $phpfog->new_sshkey("", $pubkey);
