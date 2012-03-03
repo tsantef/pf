@@ -56,8 +56,8 @@ class PHPFog {
     # ---
 
     public function login() {
-        $username = trim(prompt("PHPFog Username: "));
-        $password = trim(prompt("PHPFog Password: ", true));
+        $username = trim(prompt("PHP Fog Username: "));
+        $password = trim(prompt("PHP Fog Password: ", true));
         $payload = array('login' => $username, 'password' => $password);
         $response = $this->phpfog->post("/user_session", $payload);
         if ($this->phpfog->lastStatus() == 201) {
