@@ -2,7 +2,7 @@
 
 define("PLATFORM", platform());
 define("DS", DIRECTORY_SEPARATOR);
-define("DOWNLOAD_URL", "http://github.com/tsantef/pf/zipball/master");
+define("DOWNLOAD_URL", "http://github.com/phpfog/pf/zipball/master");
 define("INSTALL_DIR", str_replace("/", DS, "/usr/local/phpfog/pf/"));
 define("BIN_DIR", str_replace("/", DS, "/usr/bin/"));
 
