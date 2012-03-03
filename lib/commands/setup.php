@@ -23,7 +23,7 @@ function pf_setup($argv) {
     try {
         $has_api = $phpfog->login();
     } catch (Exception $e) {}
-    if (!$has_api) { die('Failed to login'); }	
+    if (!$has_api) { die('Failed to login'.PHP_EOL); }	
 
     # Create an ssh key
     $ssh_path = realpath(HOME.".ssh");
@@ -46,9 +46,12 @@ function pf_setup($argv) {
 
     try {
         $phpfog->new_sshkey("", $pubkey);
-        echo "Successfully installed ssh key.";
+        echo "Successfully installed ssh key.".PHP_EOL;
     } catch(PestJSON_ClientError $e) {
-        echo "Failed to install ssh key.";
+        $resp = $phpfog->last_response();
+        $body = json_decode($resp['body']);
+        $message = $body->message;
+        echo "Error: $message".PHP_EOL;
     }
 
 }
