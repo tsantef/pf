@@ -1,6 +1,6 @@
 <?php
 function pf_whoami($argv) {
-    $phpfog = new \pf\PHPFog();
+    $phpfog = new PHPFog();
     if ($phpfog->session['username'] == null) {
         echo "Not logged in".PHP_EOL;
     } else {

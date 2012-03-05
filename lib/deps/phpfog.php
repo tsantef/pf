@@ -6,14 +6,12 @@ class PHPFog {
     public $username = null;
     public $api_auth_token = null;
     public $session = null;
-    private $session_path = ".pf-command-session";
+    private $session_path = null;
 
     public function __construct() {
+        $this->session_path = HOME . ".pf-command-session";
         $this->load_session();
         $this->phpfog = new \PestJSON((isset($_ENV['PHPFOG_URL']) && $_ENV['PHPFOG_URL'] != "") ? $_ENV['PHPFOG_URL'] : "https://www.phpfog.com");
-        if ($this->session == null) {
-            $this->login();
-        }
     }
 
     # --- SSH Keys ----
@@ -33,7 +31,7 @@ class PHPFog {
     function get_sshkeys() {
         $client = $this;
         $response = $this->api_call(function() use ($client) {
-            $client->phpfog->curl_opts[CURLOPT_HTTPHEADER] = array("Api-Auth-Token: ".$client->session['api_auth_token']);
+            $client->phpfog->curl_opts[CURLOPT_HTTPHEADER] = array("Api-Auth-Token: ".$client->session['api-auth-token']);
             return $client->phpfog->get("/dedicated_clouds");
         });
         return $response;
@@ -43,7 +41,7 @@ class PHPFog {
         $client = $this;
         $payload = array('name' => $ssh_key_name, 'key' => $ssh_key_key );
         $response = $this->api_call(function() use ($client, $payload) {
-            return $client->phpfog->post("/ssh_keys", $payload, array("Api-Auth-Token: ".$client->session['api_auth_token']));
+            return $client->phpfog->post("/ssh_keys", $payload, array("Api-Auth-Token: ".$client->session['api-auth-token']));
         });
         return $response;
     }
@@ -58,12 +56,12 @@ class PHPFog {
     # ---
 
     public function login() {
-        $username = trim(prompt("PHPFog Username: "));
-        $password = trim(prompt("PHPFog Password: ", true));
+        $username = trim(prompt("PHP Fog Username: "));
+        $password = trim(prompt("PHP Fog Password: ", true));
         $payload = array('login' => $username, 'password' => $password);
         $response = $this->phpfog->post("/user_session", $payload);
         if ($this->phpfog->lastStatus() == 201) {
-            $this->session['api_auth_token'] = $response->{'api-auth-token'};
+            $this->session['api-auth-token'] = $response['api-auth-token'];
             $this->session['username'] = $username;
             $this->save_session();
             return true;
@@ -98,32 +96,28 @@ class PHPFog {
         return $result;
     }
 
-    function prompt($prompt, $pw = false) {
-        if (!$pw) {
-            echo $prompt;
-            return fgets(fopen('php://stdin', 'r'));
-        }
-        # If client is using Windows OS
-        if (preg_match('/^win/i', PHP_OS)) {
-            $vbscript = sys_get_temp_dir() . 'prompt_password.vbs';
-            file_put_contents($vbscript, 'wscript.echo(InputBox("'.addslashes($prompt).'", "", "password here"))');
-            $command = "cscript //nologo " . escapeshellarg($vbscript);
-            $password = rtrim(shell_exec($command));
-            unlink($vbscript);
-            return $password;
-        } else {
-            # IF *nix-based
-            $command = "/usr/bin/env bash -c 'echo OK'";
-            if (rtrim(shell_exec($command)) !== 'OK') {
-                trigger_error("Can't invoke bash");
-                return;
-            }
-            $command = "/usr/bin/env bash -c 'read -s -p \"".addslashes($prompt)."\" mypassword && echo \$mypassword'";
-            $password = rtrim(shell_exec($command));
-            echo PHP_EOL;
-            return $password;
-        }
-    }
+    // function prompt($prompt, $pw = false) {
+    //     # If client is using Windows OS
+    //     // if (preg_match('/^win/i', PHP_OS)) {
+    //     //     $vbscript = sys_get_temp_dir() . 'prompt_password.vbs';
+    //     //     file_put_contents($vbscript, 'wscript.echo(InputBox("'.addslashes($prompt).'", "", "password here"))');
+    //     //     $command = "cscript //nologo " . escapeshellarg($vbscript);
+    //     //     $password = rtrim(shell_exec($command));
+    //     //     unlink($vbscript);
+    //     //     return $password;
+    //     // } else {
+    //     //     # IF *nix-based
+    //     //     $command = "/usr/bin/env bash -c 'echo OK'";
+    //     //     if (rtrim(shell_exec($command)) !== 'OK') {
+    //     //         trigger_error("Can't invoke bash");
+    //     //         return;
+    //     //     }
+    //     //     $command = "/usr/bin/env bash -c 'read -s -p \"".addslashes($prompt)."\" mypassword && echo \$mypassword'";
+    //     //     $password = rtrim(shell_exec($command));
+    //     //     echo PHP_EOL;
+    //     //     return $password;
+    //     // }
+    // }
 
     function load_session() {
         if (file_exists($this->session_path)) {

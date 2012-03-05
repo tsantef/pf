@@ -56,7 +56,10 @@ function rm_rf($dir) {
 }
 
 # Prompt for input
-function prompt($msg, $isPassword = false) {
+function prompt($msg, $pw = false) {
     echo "$msg";
-    return fgets(fopen('php://stdin', 'r'));
+    if ($pw == true) { system('stty -echo'); }
+    $input = trim(fgets(fopen('php://stdin', 'r')));
+    if ($pw == true) { system('stty echo'); echo PHP_EOL; }
+    return $input; 
 }
