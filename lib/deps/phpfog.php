@@ -98,6 +98,10 @@ class PHPFog {
         return false;
     }
 
+    public function logout() {
+        unlink($this->session_path);
+    }
+
     public function username() {
         return $this->session['username'];
     }
@@ -116,38 +120,16 @@ class PHPFog {
             $result = is_object($block) ? $block() : $block;
         } catch (\PestJSON_Unauthorized $e) {
             try {
+                $this->login();
                 $result = is_object($block) ? $block() : $block;
             } catch (Exception $e) {
-                falure_message(get_api_error_message().PHP_EOL);
+                falure_message($this->get_api_error_message().PHP_EOL);
                 exit(1);
             }
         }
 
         return $result;
     }
-
-    // function prompt($prompt, $pw = false) {
-    //     # If client is using Windows OS
-    //     // if (preg_match('/^win/i', PHP_OS)) {
-    //     //     $vbscript = sys_get_temp_dir() . 'prompt_password.vbs';
-    //     //     file_put_contents($vbscript, 'wscript.echo(InputBox("'.addslashes($prompt).'", "", "password here"))');
-    //     //     $command = "cscript //nologo " . escapeshellarg($vbscript);
-    //     //     $password = rtrim(shell_exec($command));
-    //     //     unlink($vbscript);
-    //     //     return $password;
-    //     // } else {
-    //     //     # IF *nix-based
-    //     //     $command = "/usr/bin/env bash -c 'echo OK'";
-    //     //     if (rtrim(shell_exec($command)) !== 'OK') {
-    //     //         trigger_error("Can't invoke bash");
-    //     //         return;
-    //     //     }
-    //     //     $command = "/usr/bin/env bash -c 'read -s -p \"".addslashes($prompt)."\" mypassword && echo \$mypassword'";
-    //     //     $password = rtrim(shell_exec($command));
-    //     //     echo PHP_EOL;
-    //     //     return $password;
-    //     // }
-    // }
 
     function get_api_error_message() {
         $resp = $this->last_response();

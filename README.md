@@ -55,6 +55,10 @@ Pull down an app for the first time.
 Shows the current username logged in.
 
     pf whoami
+    
+#### Logout
+
+	pf logout
 	
 	
 	
