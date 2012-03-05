@@ -44,6 +44,11 @@ Show an apps details.
 
     pf details [<appname>|<app_id>]
 
+#### Clone
+
+Pull down an app for the first time.
+
+	pf clone [<appname>|<app_id>] [directory]
 	
 #### Whoami
 
