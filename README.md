@@ -36,7 +36,14 @@ Deploys an app using git submodules.
 
 Lists clouds, apps, and sshkeys.
 
-	pf list [clouds|apps <cloud_id>|sshkeys]	
+	pf list [clouds|apps <cloud_id>|sshkeys]
+	
+#### Details
+
+Show an apps details.
+
+    pf details [<appname>|<app_id>]
+
 	
 #### Whoami
 

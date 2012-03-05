@@ -35,6 +35,27 @@ class PHPFog {
         return $response;
     }
 
+    function get_app($app_id) {
+        $client = $this;
+        $response = $this->api_call(function() use ($client, $app_id) {
+            return $client->phpfog->get("/apps/$app_id", array("Api-Auth-Token: ".$client->session['api-auth-token']));
+        });
+        return $response;
+    }
+
+    function get_app_id_by_name($app_name) {
+        $app_id = null;
+        $raw_app_name = strtolower($app_name);
+        $apps = $this->get_apps();
+        foreach ($apps as $app) {
+            if ($app['name'] == $raw_app_name) {
+                $app_id = $app['id'];
+                break;
+            }
+        }
+        return $app_id;
+    }
+
     # --- SSH Keys ---- #
 
     function get_sshkeys() {
