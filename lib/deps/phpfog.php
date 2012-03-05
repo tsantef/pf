@@ -56,6 +56,14 @@ class PHPFog {
         return $app_id;
     }
 
+    function delete_app($app_id) {
+        $client = $this;
+        $response = $this->api_call(function() use ($client, $app_id) {
+            return $client->phpfog->delete("/apps/$app_id", array("Api-Auth-Token: ".$client->session['api-auth-token']));
+        });
+        return $response;
+    }
+
     # --- SSH Keys ---- #
 
     function get_sshkeys() {
@@ -75,12 +83,13 @@ class PHPFog {
         return $response;
     }
 
-    # def delete_sshkey(sshkey_id)
-    #   response = api_call do
-    #     response = $phpfog.delete("/ssh_keys/#{sshkey_id}", nil, { :accept => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
-    #   end
-    #   response
-    # end
+    function delete_sshkey($sshkey_id) {
+        $client = $this;
+        $response = $this->api_call(function() use ($client, $sshkey_id) {
+            return $client->phpfog->delete("/ssh_keys/$sshkey_id", array("Api-Auth-Token: ".$client->session['api-auth-token']));
+        });
+        return $response;
+    }
 
     # ---
 

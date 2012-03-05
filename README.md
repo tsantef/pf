@@ -40,7 +40,7 @@ Lists clouds, apps, and sshkeys.
 	
 #### Details
 
-Show an apps details.
+Shows an apps details.
 
     pf details [<appname>|<app_id>]
 
@@ -49,6 +49,12 @@ Show an apps details.
 Pull down an app for the first time.
 
 	pf clone [<appname>|<app_id>] [directory]
+	
+#### Delete
+
+Deletes an app or ssh key.
+
+	pf delete [app|sshkey] [<appname>|<app_id>|<ssh_key_id>]
 	
 #### Whoami
 

@@ -19,6 +19,7 @@ Usage: pf setup
        pf list [clouds|apps <cloud_id>|sshkeys]
        pf details [<appname>|<app_id>]
        pf clone [<appname>|<app_id>] [directory]
+       pf delete [app|sshkey] [<appname>|<app_id>|<ssh_key_id>]
        pf whoami
        pf logout
 

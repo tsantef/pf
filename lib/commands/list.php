@@ -38,4 +38,5 @@ function pf_list($argv) {
         break;
     }
 
+    return false;
 }
