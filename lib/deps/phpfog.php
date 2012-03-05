@@ -14,7 +14,28 @@ class PHPFog {
         $this->phpfog = new \PestJSON((isset($_ENV['PHPFOG_URL']) && $_ENV['PHPFOG_URL'] != "") ? $_ENV['PHPFOG_URL'] : "https://www.phpfog.com");
     }
 
-    # --- SSH Keys ----
+    # --- Clouds --- #
+
+    function get_clouds() {
+        $client = $this;
+        $response = $this->api_call(function() use ($client) {
+            return $client->phpfog->get("/dedicated_clouds", array("Api-Auth-Token: ".$client->session['api-auth-token']));
+        });
+        return $response;
+    }
+
+    # --- Apps --- #
+
+    function get_apps($cloud_id=null) {
+        $request_url = ($cloud_id != null) ? "/clouds/$cloud_id/apps" : "/apps";
+        $client = $this;
+        $response = $this->api_call(function() use ($client, $request_url) {
+            return $client->phpfog->get($request_url, array("Api-Auth-Token: ".$client->session['api-auth-token']));
+        });
+        return $response;
+    }
+
+    # --- SSH Keys ---- #
 
     function get_sshkeys() {
         $client = $this;
@@ -73,10 +94,11 @@ class PHPFog {
         try {
             $result = is_object($block) ? $block() : $block;
         } catch (\PestJSON_Unauthorized $e) {
-            if ($this->login()) {
+            try {
                 $result = is_object($block) ? $block() : $block;
-            } else {
-                echo "Login Failed";
+            } catch (Exception $e) {
+                falure_message(get_api_error_message().PHP_EOL);
+                exit(1);
             }
         }
 
@@ -105,6 +127,12 @@ class PHPFog {
     //     //     return $password;
     //     // }
     // }
+
+    function get_api_error_message() {
+        $resp = $this->last_response();
+        $body = json_decode($resp['body']);
+        return $body->message;
+    }
 
     function load_session() {
         if (file_exists($this->session_path)) {

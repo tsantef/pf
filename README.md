@@ -22,15 +22,21 @@ Comming soon.
 
 #### Setup
 
-To easily create and upload a public ssh key
+Creats and uploads a public ssh key.
 
     pf setup
 
 #### Update
 
-To deploy an app using git submodules
+Deploys an app using git submodules.
 
 	pf update
+
+#### List	
+
+Lists clouds, apps, and sshkeys.
+
+	pf list [clouds|apps <cloud_id>|sshkeys]	
 	
 #### Whoami
 

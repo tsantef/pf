@@ -16,6 +16,7 @@ if (!CommandLine::run($argv)) {
     echo <<<EOF
 Usage: pf setup
        pf update
+       pf list [clouds|apps <cloud_id>|sshkeys]
        pf whoami
 
 EOF;

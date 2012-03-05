@@ -56,6 +56,7 @@ function pf_setup($argv) {
         echo "Error: $message".PHP_EOL;
     }
 
+    return true;
 }
 
 function has_bin($name) {
