@@ -16,23 +16,10 @@ class PHPFog {
 
     # --- SSH Keys ----
 
-    # def get_sshkeys
-    #   response = api_call do
-    #     $phpfog.get("/ssh_keys", nil, { :accept => "application/json", :content_type => "application/json", "Api-Auth-Token"=>get_session('api-auth-token') })
-    #   end
-    #   response_body = JSON.parse(response.body)
-    #   if response.code == 200
-    #     return { :status => response.code, :message => "OK" , :body => response_body }
-    #   else
-    #     return { :status => response.code, :message => response_body["message"] , :body => response_body }
-    #   end
-    # end
-
     function get_sshkeys() {
         $client = $this;
         $response = $this->api_call(function() use ($client) {
-            $client->phpfog->curl_opts[CURLOPT_HTTPHEADER] = array("Api-Auth-Token: ".$client->session['api-auth-token']);
-            return $client->phpfog->get("/dedicated_clouds");
+            return $client->phpfog->get("/ssh_keys", array("Api-Auth-Token: ".$client->session['api-auth-token']));
         });
         return $response;
     }
@@ -85,7 +72,7 @@ class PHPFog {
         $result = null;
         try {
             $result = is_object($block) ? $block() : $block;
-        } catch (\Pest_Unauthorized $e) {
+        } catch (\PestJSON_Unauthorized $e) {
             if ($this->login()) {
                 $result = is_object($block) ? $block() : $block;
             } else {

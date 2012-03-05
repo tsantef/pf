@@ -33,8 +33,12 @@ class PestJSON {
         $this->curl_opts[CURLOPT_USERPWD] = $user.':'.$pass;
     }
 
-    public function get($url) {
-        $curl = $this->prepRequest($this->curl_opts, $url);
+    public function get($url, $headers = array()) {
+        $curl_opts = $this->curl_opts;
+        $curl_opts[CURLOPT_HEADER] = false;
+        $curl_opts[CURLOPT_HTTPHEADER] = $headers;
+
+        $curl = $this->prepRequest($curl_opts, $url);
         $body = $this->doRequest($curl);
 
         return $this->processBody($body);
