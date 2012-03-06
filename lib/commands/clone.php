@@ -13,7 +13,7 @@ function pf_clone($argv) {
     if ("$app_id" != $raw_app_id) {
         $app_id = $phpfog->get_app_id_by_name($raw_app_id);
         if ($app_id == null) {
-            falure_message("No app found with the name: $raw_app_id".PHP_EOL);
+            failure_message("No app found with the name: $raw_app_id".PHP_EOL);
             return true;
         }
     }
@@ -21,13 +21,21 @@ function pf_clone($argv) {
     try {
         $app = $phpfog->get_app($app_id);
     } catch (PestJSON_NotFound $e) {
-        falure_message($phpfog->get_api_error_message().PHP_EOL);
+        failure_message($phpfog->get_api_error_message().PHP_EOL);
         return true;
     }
 
     $git_url = $app['git_url'];
+    $ssh_identifier = preg_replace("/[^A-Za-z0-9-]/", "-", $phpfog->username());
+
+    preg_match("/.*?:(.*?)$/", $git_url, $matches);
+
+    $git_url = $ssh_identifier.":".$matches[1];
+    echo "git clone $git_url".PHP_EOL;
     
-    execute("git clone $git_url $directory");
+    if (execute("git clone $git_url $directory") > 0) {
+        echo failure_message("Failed to clone app. Run 'pf setup' to insure you have your ssk key installed correctly.");
+    }
 
     return true;
 }

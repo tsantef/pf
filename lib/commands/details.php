@@ -12,7 +12,7 @@ function pf_details($argv) {
     if ("$app_id" != $raw_app_id) {
         $app_id = $phpfog->get_app_id_by_name($raw_app_id);
         if ($app_id == null) {
-            falure_message("No app found with the name: $raw_app_id".PHP_EOL);
+            failure_message("No app found with the name: $raw_app_id".PHP_EOL);
             return true;
         }
     }
@@ -20,7 +20,7 @@ function pf_details($argv) {
     try {
         $app = $phpfog->get_app($app_id);
     } catch (PestJSON_NotFound $e) {
-        falure_message($phpfog->get_api_error_message().PHP_EOL);
+        failure_message($phpfog->get_api_error_message().PHP_EOL);
         return true;
     }
     

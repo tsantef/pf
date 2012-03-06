@@ -24,7 +24,7 @@ function pf_list($argv) {
                     echo_item($item['name'], $item['id'], $item['status']);
                 }
             } catch (PestJSON_NotFound $e) {
-                falure_message($phpfog->get_api_error_message().PHP_EOL);
+                failure_message($phpfog->get_api_error_message().PHP_EOL);
             }
             return true;
         break;

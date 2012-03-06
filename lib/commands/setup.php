@@ -30,14 +30,14 @@ function pf_setup($argv) {
     # Create an ssh key
     $ssh_path = realpath(HOME.".ssh");
     $ssh_key_name = "~/.ssh/$ssh_identifier";
-    $ssh_real_path = realpath(HOME.".ssh/$ssh_identifier");
+    $ssh_real_path = HOME.".ssh/$ssh_identifier";
     if (!file_exists($ssh_real_path)) {
         $exit_code = execute("ssh-keygen -q -t rsa -b 2048 -f $ssh_key_name");
         if ($exit_code != 0) {
             die('Failed to generate ssh key');
         }
         $fh = fopen("$ssh_path/config", 'a') or die("can't open file".PHP_EOL);    
-        fwrite($fh,"Host $ssh_identifier".PHP_EOL);
+        fwrite($fh,PHP_EOL."Host $ssh_identifier".PHP_EOL);
         fwrite($fh,"    HostName git01.phpfog.com".PHP_EOL);
         fwrite($fh,"    User git".PHP_EOL);
         fwrite($fh,"    IdentityFile $ssh_key_name".PHP_EOL);

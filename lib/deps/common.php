@@ -2,7 +2,7 @@
 
 function success_message($message) { echo colorize($message, 32); }
 function info_message($message) { echo colorize($message, 36); }
-function falure_message($message) { echo colorize($message, 31); }
+function failure_message($message) { echo colorize($message, 31); }
 
 function echo_item($name, $id, $description=null) {
     if ($description != null) {
