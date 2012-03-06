@@ -36,11 +36,19 @@ function pf_setup($argv) {
         if ($exit_code != 0) {
             die('Failed to generate ssh key');
         }
-        $fh = fopen("$ssh_path/config", 'a') or die("can't open file".PHP_EOL);    
-        fwrite($fh,PHP_EOL."Host $ssh_identifier".PHP_EOL);
-        fwrite($fh,"    HostName git01.phpfog.com".PHP_EOL);
-        fwrite($fh,"    User git".PHP_EOL);
-        fwrite($fh,"    IdentityFile $ssh_key_name".PHP_EOL);
+    }
+
+    # Add ssh to config
+    $ssh_config_path = HOME.".ssh/config";
+    $config = file_get_contents($ssh_config_path);
+    $config_host_line = "Host $ssh_identifier";
+    if(!strpos($file, $config_host_line)) {
+        $fh = fopen("$ssh_path/config", 'w') or die("can't open file".PHP_EOL);    
+        fwrite($fh, $config_host_line.PHP_EOL);
+        fwrite($fh, "   HostName git01.phpfog.com".PHP_EOL);
+        fwrite($fh, "   User git".PHP_EOL);
+        fwrite($fh, "   IdentityFile $ssh_key_name".PHP_EOL.PHP_EOL);
+        fwrite($fh, $config);
         fclose($fh);
     }
 
