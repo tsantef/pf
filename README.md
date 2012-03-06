@@ -49,10 +49,28 @@ Shows an apps details.
 Pull down an app for the first time.
 
 	pf clone [<appname>|<app_id>] [directory]
+
+#### Pull
+
+Wrapper for git pull.
+
+	pf pull
+
+#### Push
+
+Wrapper for git push.
+
+	pf push
+
+#### Update
+
+Deploys an app using git submodules.
+
+	pf update
 	
 #### Delete
 
-Deletes an app or ssh key.
+Deletes a remote app or remote ssh key. 
 
 	pf delete [app|sshkey] [<appname>|<app_id>|<ssh_key_id>]
 	
