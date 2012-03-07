@@ -16,7 +16,14 @@ if (!CommandLine::run($argv)) {
     echo <<<EOF
 Usage: pf setup
        pf update
+       pf list [clouds|apps <cloud_id>|sshkeys]
+       pf details [<appname>|<app_id>]
+       pf clone [<appname>|<app_id>] [directory]
+       pf pull
+       pf push
+       pf delete [app|sshkey] [<appname>|<app_id>|<ssh_key_id>]
        pf whoami
+       pf logout
 
 EOF;
 }
