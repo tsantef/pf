@@ -2,10 +2,8 @@
 
 function pf_list($argv) {
     $phpfog = new PHPFog();
-    
-    $arg = array_shift($argv);
 
-    switch (strtolower($arg)) {
+    switch (strtolower(array_shift($argv))) {
         case "clouds":
             $items = $phpfog->get_clouds();
             $items[] = array('id'=>0, 'name'=> "Shared");
@@ -13,30 +11,24 @@ function pf_list($argv) {
                 echo_item($item['name'], $item['id']);
             }
             return true;
-        break;
-
         case "apps":
             try {
                 $raw_cloud_id = array_shift($argv);
-                $cloud_id = (strtolower($raw_cloud_id) == 'shared') ? 'shared' : intval($raw_cloud_id);
-                $items = $phpfog->get_apps($cloud_id);
-                foreach ($items as $item) {
+                $cloud_id = (strtolower($raw_cloud_id) == 'shared' || $raw_cloud_id == '0') ? 'shared' : intval($raw_cloud_id);
+                foreach ($phpfog->get_apps($cloud_id) as $item) {
                     echo_item($item['name'], $item['id'], $item['status']);
                 }
             } catch (PestJSON_NotFound $e) {
-                failure_message($phpfog->get_api_error_message().PHP_EOL);
+                failure_message($phpfog->get_api_error_message());
             }
             return true;
-        break;
-
         case "sshkeys":
-            $items = $phpfog->get_sshkeys();
-            foreach ($items as $item) {
+            foreach ($phpfog->get_sshkeys() as $item) {
                 echo_item($item['name'], $item['id']);
             }
             return true;
-        break;
+        default:
+            return false;
     }
-
-    return false;
 }
+?>

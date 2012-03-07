@@ -1,14 +1,23 @@
 <?php
+function wrap($msg) {
+    return $msg.PHP_EOL;
+}
 
-function success_message($message) { echo colorize($message, 32); }
-function info_message($message) { echo colorize($message, 36); }
-function failure_message($message) { echo colorize($message, 31); }
+function success_message($message) {
+    echo wrap(colorize($message, 32));
+}
+function info_message($message) {
+    echo wrap(colorize($message, 36));
+}
+function failure_message($message) {
+    echo wrap(colorize($message, 31));
+}
 
-function echo_item($name, $id, $description=null) {
+function echo_item($name, $id, $description = null) {
     if ($description != null) {
-        echo bwhite($name)." - $description (ID:".teal($id).")".PHP_EOL;
+        echo wrap(bwhite($name)." - $description (ID: ".teal($id).")");
     } else {
-        echo bwhite($name)." (ID:".teal($id).")".PHP_EOL;
+        echo wrap(bwhite($name)." (ID: ".teal($id).")");
     }
 }
 
@@ -21,5 +30,6 @@ function bwhite($str) {
 }
 
 function teal($str) {
-    return colorize($str, "36"); 
+    return colorize($str, "36");
 }
+?>

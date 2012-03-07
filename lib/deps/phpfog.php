@@ -1,7 +1,5 @@
 <?php
-
 class PHPFog {
-
     public $phpfog;
     public $username = null;
     public $api_auth_token = null;
@@ -127,12 +125,12 @@ class PHPFog {
         $result = null;
         try {
             $result = is_object($block) ? $block() : $block;
-        } catch (\PestJSON_Unauthorized $e) {
+        } catch (PestJSON_Unauthorized $e) {
             try {
                 $this->login();
                 $result = is_object($block) ? $block() : $block;
             } catch (Exception $e) {
-                falure_message($this->get_api_error_message().PHP_EOL);
+                falure_message($this->get_api_error_message());
                 exit(1);
             }
         }
@@ -157,5 +155,4 @@ class PHPFog {
     function save_session() {
         file_put_contents($this->session_path, json_encode($this->session));
     }
-
 }
