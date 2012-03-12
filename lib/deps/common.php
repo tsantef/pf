@@ -32,4 +32,12 @@ function bwhite($str) {
 function teal($str) {
     return colorize($str, "36");
 }
+
+function red($str) {
+    return colorize($str, "31");
+}
+
+function green($str) {
+    return colorize($str, "32");
+}
 ?>

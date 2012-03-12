@@ -58,13 +58,22 @@ function pf_setup($argv) {
 
     try {
         $phpfog->new_sshkey('', $pubkey);
-        echo wrap("Successfully installed ssh key.");
+        echo wrap(green("Successfully installed ssh key."));
     } catch(PestJSON_ClientError $e) {
         $resp = $phpfog->last_response();
         $body = json_decode($resp['body']);
         $message = $body->message;
-        echo wrap("Error: ".$message);
-    }
+        echo wrap("Error: ".red($message));  
+    } 
+
+    echo wrap(bwhite("To clone an app use the following steps:"));
+    echo wrap("1. List your apps: ".bwhite("pf list apps"));
+    echo wrap("2. To fetch your application code: ".bwhite("pf clone <app_id>"));
+    echo wrap("3. Make your changes");
+    echo wrap("4. Stage changes in your local repo: ".bwhite("git add -A"));
+    echo wrap("5. Commit changes: ".bwhite("git commit -m \"My first commit\""));
+    echo wrap("6. Deploy to PHP Fog: ".bwhite("pf push"));
+    echo wrap("For more information visit: ".bwhite("http://dev.appfog.com/features/article/pf_command_line_tool"));
 
     return true;
 }
