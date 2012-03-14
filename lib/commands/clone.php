@@ -28,14 +28,9 @@ function pf_clone($argv) {
     }
 
     $git_url = $app['git_url'];
-    $ssh_identifier = preg_replace("/[^A-Za-z0-9-]/", "-", $phpfog->username());
+    echo wrap("git clone ".$git_url);
 
-    preg_match("/.*?:(.*?)$/", $git_url, $matches);
-
-    $git_url = $ssh_identifier.":".$matches[1];
-    echo wrap("git clone $git_url");
-
-    if (execute("git clone $git_url $directory") > 0) {
+    if (execute("git clone ".$git_url.' '.$directory) > 0) {
         echo failure_message("Failed to clone app. Run 'pf setup' to insure you have your ssk key installed correctly.");
     }
 
