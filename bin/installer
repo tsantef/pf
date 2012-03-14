@@ -6,7 +6,7 @@ define("DOWNLOAD_URL", "https://github.com/phpfog/pf/zipball/master");
 define("PKG_DIR", str_replace('/', DS, "/usr/local/phpfog"));
 define("INSTALL_DIR", str_replace("/", DS, PKG_DIR."/pf"));
 define("BIN_DIR", str_replace("/", DS, "/usr/bin"));
-define("TAB_SPACE", "    "));
+define("TAB_SPACE", "    ");
 
 array_shift($argv);
 $err;
