@@ -1,14 +1,42 @@
-# PF - PHPFog Command Line
-
+# PF-CLI - PHP Fog Command Line
 
 ## Installation
 
-### OSX
+#### Requirements
+
+1. PHP-CLI
+2. curl
+3. git
+
+### OSX (Lion)
 
 Download and install the pf command line tool
 
     curl -s https://raw.github.com/phpfog/pf/master/bin/installer | sudo php
 
+### Ubuntu (10.04.4-desktop-amd64)
+
+Download and install the pf command line tool
+
+    curl -s https://raw.github.com/phpfog/pf/master/bin/installer | sudo php
+    
+#### Troubleshoot Ubuntu Installation
+
+Error: **The program 'curl' is currently not installed.** You can install curl by typing:
+
+    sudo apt-get install curl
+
+Error: **sudo: php: command not found.** You can install PHP-CLI by typing: 
+
+    sudo apt-get install php5-cli
+
+Missing Requirement: **The curl extension for php is not loaded.** You can install the php curl extension by typing:
+
+    sudo apt-get install php5-curl
+
+Missing Requirement: **Cannot find git executable.** You can install git by typing:
+
+    sudo apt-get install git-core
 
 ### Windows
 
