@@ -12,7 +12,7 @@
 
 Download and install the pf command line tool
 
-    curl -s https://raw.github.com/phpfog/pf/master/bin/installer | sudo php
+    curl -s https://raw.github.com/phpfog/pf/master/bin/installer | php
 
 #### Troubleshoot OSX Installation
 
@@ -25,7 +25,7 @@ Missing Requirement: **Cannot find git executable.**
 
 Download and install the pf command line tool
 
-    curl -s https://raw.github.com/phpfog/pf/master/bin/installer | sudo php
+    curl -s https://raw.github.com/phpfog/pf/master/bin/installer | php
     
 #### Troubleshoot Ubuntu Installation
 
