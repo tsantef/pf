@@ -1,144 +1,206 @@
+#!/usr/bin/env php
 <?php
-
 define("PLATFORM", platform());
 define("DS", DIRECTORY_SEPARATOR);
 define("DOWNLOAD_URL", "https://github.com/phpfog/pf/zipball/master");
-define("INSTALL_DIR", str_replace("/", DS, "/usr/local/phpfog/pf/"));
-define("BIN_DIR", str_replace("/", DS, "/usr/bin/"));
+define("PKG_DIR", str_replace('/', DS, "/usr/local/phpfog"));
+define("INSTALL_DIR", str_replace("/", DS, PKG_DIR."/pf"));
+define("BIN_DIR", str_replace("/", DS, "/usr/local/bin"));
+define("TAB_SPACE", "    ");
 
 array_shift($argv);
+$err;
 
-process($argv);
-
-function process($argv) {
-
-    # Run through all arguments
-    foreach ($argv as $arg) {
-        switch ($arg) {
-            case '-h':
-            case '--help':
-                display_help();
-                exit(0);
-                break;
-            case '-c':
-            case '--check':
-                exit(check_deps());
-                break;
-            case '-f':
-            case '--force':
-                install();
-                break;
-            default:
-                break;
-        }
+# Run through all arguments
+foreach ($argv as $arg) {
+    switch ($arg) {
+        case '-h':
+        case '--help':
+            display_help();
+            exit(0);
+            break;
+        case '-c':
+        case '--check':
+            exit(check_deps());
+            break;
+        case '-f':
+        case '--force':
+            install();
+            break;
+        case '-u':
+        case '--uninstall':
+            uninstall();
+            exit(0);
+            break;
+        default:
+            break;
     }
+}
+if (check_deps()) {
+    install();
+}
 
-    if (check_deps()) {
-        install();
-    }
+function wrap($msg) {
+    return $msg.PHP_EOL;
+}
 
-    exit(0);
+function clean($r = '', $error) {
+    return preg_replace('/.*:/', $r, $error).'.';
 }
 
 function check_deps() {
     $errors = array();
+    $supported = array(OSX, LINUX);
 
-    if (PLATFORM <> OSX) {
-        $errors[] = "The current os (".php_uname('s').") is not supported";
+    if (!in_array(PLATFORM, $supported)) { 
+        $errors[] = "The current os (".PHP_OS.") is not supported";
     }
 
-    if (version_compare(PHP_VERSION, '5.3.2', '<')) {
+    if (version_compare(PHP_VERSION, '5.3.1', '<')) {
         $errors[] = "Minimum required php version not met.";
     }
 
-    if (!empty($errors)) {
+    if (extension_loaded('curl')===false) {
+        $errors[] = "The curl extension for php is not loaded.";
+    }
 
-        echo 'PF cannot be installed for the following reasons:'.PHP_EOL;
+    if (!has_bin('git')) {
+        $errors[] = "Cannot find git executable.";
+    }
+
+    if (!empty($errors)) {
+        echo wrap('PF cannot be installed for the following reasons:');
         foreach ($errors as $error) {
-            error("    $error".PHP_EOL);
+            error(TAB_SPACE.$error);
         }
         echo PHP_EOL;
         return 0;
     }
 
-    success("All settings correct for using PF".PHP_EOL);
+    success("All settings correct for using PF");
     return 1;
 }
 
+# Install needed files
 function install() {
-    $source_package = tempnam("","");
+    $source_package = tempnam('/tmp', '');
 
-    info('Preparing installation directory...'.PHP_EOL);
-    rrmdir(INSTALL_DIR);
-    if (!is_dir(INSTALL_DIR) && !mkdir(INSTALL_DIR, 0777, true)) {
-        error('Failed to create installation folder.'.PHP_EOL);
+    info('Preparing installation directory ('.INSTALL_DIR.')...');
+    rrmdir(PKG_DIR);
+    if (!is_dir(INSTALL_DIR) && !@mkdir(INSTALL_DIR, 0777, true)) {
+        $err = error_get_last();
+        error('Failed to create installation folder ('.clean(INSTALL_DIR.').', $err['message']));
         exit(1);
     }
 
-    info('Downloading source package...'.PHP_EOL);
-    if (!copy(DOWNLOAD_URL, $source_package)) {
-        error('Failed to download installation package.'.PHP_EOL);
+    info('Downloading source package...');
+    if (!@copy(DOWNLOAD_URL, $source_package)) {
+        $err = error_get_last();
+        error('Failed to download installation package.'.clean($err['message']));
         exit(1);
     }
 
-    info('Unpacking...'.PHP_EOL);
+    info('Unpacking...');
     $zip = new ZipArchive;
     $res = $zip->open($source_package);
     if ($res === TRUE) {
-        $zip->extractTo(INSTALL_DIR);
+        if (!@$zip->extractTo(INSTALL_DIR)) {
+            $err = error_get_last();
+            error('Failed to extract download to '.clean(INSTALL_DIR.'.', $err['message']));
+            exit(1);
+        }
         $zip->close();
     } else {
-        error('Failed unpack download.'.PHP_EOL);
+        $err = error_get_last();
+        error('Failed to open archive.'.clean($err['message']));
         exit(1);
     }
-    unlink($source_package); # remove tempfile
+
+    # Remove tempfile
+    @unlink($source_package);
 
     # Remove the package files out of the package folder
-    $package_contents = glob(INSTALL_DIR.'*');
-    $ignore = array('.', '..');
+    $package_contents = glob(INSTALL_DIR.DS.'*');
     if (1 === count($package_contents)) {
         $inner_folder = $package_contents[0];
         foreach (array_merge(glob($inner_folder.DS.'.*'), glob($inner_folder.DS.'*')) as $filename) {
             $basename = basename($filename);
-            if (!in_array($basename, $ignore)) {
-                rename($filename, INSTALL_DIR.$basename);
+            if ($basename != '.' && $basename != '..') {
+                rename($filename, INSTALL_DIR.DS.$basename);
             }
         }
-        rmdir($inner_folder);
+        if (!@rmdir($inner_folder)) {
+            $err = error_get_last();
+            error("Failed to remove ".clean($inner_folder.'.', $err['message']));
+            exit(1);
+        }
     }
 
-    @unlink(BIN_DIR."pf");
+    @unlink(BIN_DIR.DS."pf");
 
-    if (!@chmod(INSTALL_DIR."bin".DS."pf", 0755)) {
-        error('Failed to set permissions.'.PHP_EOL);
+    if (!@chmod(INSTALL_DIR.DS."bin".DS."pf", 0755)) {
+        $err = error_get_last();
+        error("Couldn't chmod ".clean(INSTALL_DIR.DS."bin".DS."pf.", $err['message']));
         exit(1);
     }
 
-    if (!@symlink(INSTALL_DIR."bin".DS."pf", BIN_DIR."pf")) {
-        error('Failed install pf bin file.'.PHP_EOL);
+    if (!@symlink(INSTALL_DIR.DS."bin".DS."pf", BIN_DIR.DS."pf")) {
+        $err = error_get_last();
+        error("Failed to make a symlink of ".clean(INSTALL_DIR.DS."bin".DS."pf.", $err['message']));
         exit(1);
     }
 
-    success('Installation Successfull.'.PHP_EOL);
+    success('Installation Successfull.');
+}
+
+# Remove associated files
+function uninstall() {
+    echo wrap("Removing pf executable file...");
+    if (@unlink(BIN_DIR.DS."pf")) {
+        echo wrap("Removing all pf support files...");
+        rrmdir(PKG_DIR);
+    } else {
+        $err = error_get_last();
+        error("Failed to remove ".clean(BIN_DIR.DS."pf.", $err['message']));
+        exit(1);
+    }
 }
 
 function rrmdir($dir) {
     if (is_dir($dir)) {
-        $ignore = array('.', '..');
         $objects = scandir($dir);
-        foreach ($objects as $object) {
-            if (!in_array($object, $ignore)) {
-                if (filetype($dir.DS.$object) == "dir") rrmdir($dir.DS.$object); else unlink($dir.DS.$object);
+        foreach ($objects as $obj) {
+            if ($obj != '.' && $obj != '..') {
+                $path = $dir.DS.$obj;
+                if (filetype($path) == "dir") {
+                    rrmdir($path);
+                } else {
+                    if (!@unlink($path)) {
+                        $err = error_get_last();
+                        error("Failed to remove ".clean($path.'.', $err['message']));
+                        exit(1);
+                    }
+                }
             }
         }
         reset($objects);
-        rmdir($dir);
+        if (!@rmdir($dir)) {
+            $err = error_get_last();
+            error("Failed to remove ".clean($dir.'.', $err['message']));
+            exit(1);
+        }
     }
  }
 
-function success($message) { echo colorize($message, 32); }
-function info($message) { echo colorize($message, 36); }
-function error($message) { echo colorize($message, 31); }
+function success($message) {
+    echo wrap(colorize($message, 32));
+}
+function info($message) {
+    echo wrap(colorize($message, 36));
+}
+function error($message) {
+    echo wrap(colorize($message, 31));
+}
 
 function colorize($str, $color) {
     return sprintf("\033[0;".$color."m%s\033[0m", $str);
@@ -146,17 +208,30 @@ function colorize($str, $color) {
 
 function platform() {
     define("OSX", 'osx');
+    define('LINUX', 'linux');
     define("WINDOWS", 'windows');
     define("OTHER", 'other');
-    switch (strtoupper(php_uname('s'))) {
+
+    $os = strtoupper(PHP_OS);
+    switch ($os) {
         case 'DARWIN':
             return OSX;
-        break;
+        case 'LINUX':
+            return LINUX;
         default:
+            if (substr($os, 0, 3) === 'WIN') {
+                return WINDOWS;
+            }
             return OTHER;
-        break;
     }
-    return 'windows';
+}
+
+function has_bin($name) {
+    $output = null;
+    exec("which ".$name, $output);
+    $line = trim(current($output));
+    unset($output);
+    return file_exists($line);
 }
 
 function display_help() {
@@ -164,9 +239,11 @@ function display_help() {
 PF Installer
 ------------
 Options
--h, --help   Display this text
--c, --check  Display the environment info
--f, --force  Forces the installation
+-h, --help       Display this text
+-c, --check      Display the environment info
+-f, --force      Forces the installation
+-u, --uninstall  Uninstall all associated files
 
 EOF;
 }
+?>

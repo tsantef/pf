@@ -2,9 +2,7 @@
 namespace pf;
 
 class update {
-
     static public function run($argv) {
-
         # Copy repo to temp folder
         $temp_git_folder = temp_folder();
         cp_r(WORKING_DIR, $temp_git_folder);
@@ -29,10 +27,10 @@ class update {
             $path = $matches[2];
 
             # Delete sub module repo
-            rm_rf("$path/.git");
+            rm_rf($path."/.git");
 
             # Clear git cache
-            execute("git rm --cached $path");
+            execute("git rm --cached ".$path);
         }
 
         # Add changes
@@ -50,5 +48,4 @@ class update {
 
         return true;
     }
-
 }
