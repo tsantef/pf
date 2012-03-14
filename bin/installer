@@ -61,7 +61,11 @@ function check_deps() {
     }
 
     if (extension_loaded('curl')===false) {
-        $errors[] = "The Curl extension for php is not loaded.";
+        $errors[] = "The curl extension for php is not loaded.";
+    }
+
+    if (!has_bin('git')) {
+        $errors[] = "Cannot find git executable.";
     }
 
     if (!empty($errors)) {
@@ -220,6 +224,14 @@ function platform() {
             }
             return OTHER;
     }
+}
+
+function has_bin($name) {
+    $output = null;
+    exec("which ".$name, $output);
+    $line = trim(current($output));
+    unset($output);
+    return file_exists($line);
 }
 
 function display_help() {
