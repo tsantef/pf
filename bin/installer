@@ -6,9 +6,9 @@ define("DOWNLOAD_URL", "https://github.com/phpfog/pf/zipball/master");
 define("PKG_DIR", str_replace('/', DS, "/usr/local/phpfog"));
 define("INSTALL_DIR", str_replace("/", DS, PKG_DIR."/pf"));
 define("BIN_DIR", str_replace("/", DS, "/usr/bin"));
+define("TAB_SPACE", "    "));
 
 array_shift($argv);
-$tab = "    ";
 $err;
 
 # Run through all arguments
@@ -62,7 +62,7 @@ function check_deps() {
     if (!empty($errors)) {
         echo wrap('PF cannot be installed for the following reasons:');
         foreach ($errors as $error) {
-            error($tab.$error);
+            error(TAB_SPACE.$error);
         }
         echo PHP_EOL;
         return 0;

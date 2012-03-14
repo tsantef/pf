@@ -7,7 +7,7 @@
 
 Download and install the pf command line tool
 
-    curl -sL http://tinyurl.com/7ccchmg | sudo php
+    curl -s https://raw.github.com/phpfog/pf/master/bin/installer | sudo php
 
 
 ### Windows
