@@ -50,13 +50,18 @@ function clean($r = '', $error) {
 
 function check_deps() {
     $errors = array();
+    $supported = array(OSX, LINUX);
 
-    if (PLATFORM != OSX) {
+    if (!in_array(PLATFORM, $supported)) { 
         $errors[] = "The current os (".PHP_OS.") is not supported";
     }
 
     if (version_compare(PHP_VERSION, '5.3.1', '<')) {
         $errors[] = "Minimum required php version not met.";
+    }
+
+    if (extension_loaded('curl')===false) {
+        $errors[] = "The Curl extension for php is not loaded.";
     }
 
     if (!empty($errors)) {
@@ -199,6 +204,7 @@ function colorize($str, $color) {
 
 function platform() {
     define("OSX", 'osx');
+    define('LINUX', 'linux');
     define("WINDOWS", 'windows');
     define("OTHER", 'other');
 
@@ -206,6 +212,8 @@ function platform() {
     switch ($os) {
         case 'DARWIN':
             return OSX;
+        case 'LINUX':
+            return LINUX;
         default:
             if (substr($os, 0, 3) === 'WIN') {
                 return WINDOWS;
