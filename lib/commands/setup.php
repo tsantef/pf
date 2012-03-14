@@ -4,7 +4,6 @@ function pf_setup($argv) {
     $has_git = has_bin('git');
     if (!$has_git) {
         echo wrap("You need to install git before continuing!");
-        echo wrap("Download and install git from: http://code.google.com/p/git-osx-installer/");
         echo wrap("After installing git run this setup in a new terminal window.");
         return true;
     }

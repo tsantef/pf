@@ -4,15 +4,22 @@
 
 #### Requirements
 
-1. PHP-CLI
-2. curl
-3. git
+* PHP-CLI
+* curl
+* git
 
 ### OSX (Lion)
 
 Download and install the pf command line tool
 
     curl -s https://raw.github.com/phpfog/pf/master/bin/installer | sudo php
+
+#### Troubleshoot OSX Installation
+
+Missing Requirement: **Cannot find git executable.** 
+
+1. Download and install git here: <a href="http://code.google.com/p/git-osx-installer/">http://code.google.com/p/git-osx-installer/</a>
+2. Open a new terminal window and run the curl installer again.
 
 ### Ubuntu (10.04.4-desktop-amd64)
 
