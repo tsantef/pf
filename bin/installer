@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 define("PLATFORM", platform());
+define("USECOLOR", usecolor());
 define("DS", DIRECTORY_SEPARATOR);
 define("DOWNLOAD_URL", "https://github.com/phpfog/pf/zipball/master");
 define("PKG_DIR", str_replace('/', DS, "/usr/local/phpfog"));
@@ -50,7 +51,7 @@ function clean($r = '', $error) {
 
 function check_deps() {
     $errors = array();
-    $supported = array(OSX, LINUX);
+    $supported = array(OSX, LINUX, WINDOWS);
 
     if (!in_array(PLATFORM, $supported)) { 
         $errors[] = "The current os (".PHP_OS.") is not supported";
@@ -84,19 +85,20 @@ function check_deps() {
 # Install needed files
 function install() {
     $source_package = tempnam('/tmp', '');
+    unlink($source_package);
 
     info('Preparing installation directory ('.INSTALL_DIR.')...');
     rrmdir(PKG_DIR);
     if (!is_dir(INSTALL_DIR) && !@mkdir(INSTALL_DIR, 0777, true)) {
         $err = error_get_last();
-        error('Failed to create installation folder ('.clean(INSTALL_DIR.').', $err['message']));
+        error('Failed to create installation folder ('.clean(INSTALL_DIR.'.', $err['message']) .')');
         exit(1);
     }
 
     info('Downloading source package...');
-    if (!@copy(DOWNLOAD_URL, $source_package)) {
+    if (!@download(DOWNLOAD_URL, $source_package)) {
         $err = error_get_last();
-        error('Failed to download installation package.'.clean($err['message']));
+        error('Failed to download installation package. '.$err['message']);
         exit(1);
     }
 
@@ -153,6 +155,15 @@ function install() {
     success('Installation Successfull.');
 }
 
+function download($url, $path) {
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $data = curl_exec($ch);
+    curl_close($ch);
+    file_put_contents($path, $data);
+    return true;
+}
+
 # Remove associated files
 function uninstall() {
     echo wrap("Removing pf executable file...");
@@ -203,7 +214,11 @@ function error($message) {
 }
 
 function colorize($str, $color) {
-    return sprintf("\033[0;".$color."m%s\033[0m", $str);
+    if (USECOLOR) {
+        return sprintf("\033[0;".$color."m%s\033[0m", $str);
+    } else {
+        return $str;
+    }
 }
 
 function platform() {
@@ -226,12 +241,22 @@ function platform() {
     }
 }
 
+function usecolor() {
+    if (!function_exists("posix_isatty")) { return false; }
+    if (!posix_isatty(STDOUT)) { return false; }
+    return true;
+}
+
 function has_bin($name) {
     $output = null;
-    exec("which ".$name, $output);
-    $line = trim(current($output));
+    $exit_code = null;
+    if (PLATFORM != WINDOWS) {
+        exec("which ".$name, $output, $exit_code);
+    } else {
+        exec("where /Q ".$name.".exe", $output, $exit_code);
+    }
     unset($output);
-    return file_exists($line);
+    return $exit_code == 0;
 }
 
 function display_help() {
