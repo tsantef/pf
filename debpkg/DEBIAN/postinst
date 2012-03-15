@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ln -s /usr/local/phpfog/bin/pf /usr/local/bin/pf

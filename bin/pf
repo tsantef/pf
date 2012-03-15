@@ -10,6 +10,7 @@ define("LIB_PATH", dirname(__FILE__).DS.'..'.DS.'lib'.DS);
 array_shift($argv);
 
 # Load everything after fixing arguments
+require_once LIB_PATH.'version.php';
 require_once LIB_PATH.'loader.php';
 
 if (!CommandLine::run($argv)) {
