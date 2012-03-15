@@ -43,7 +43,7 @@ function pf_setup($argv) {
     # Add ssh to config
     $ssh_config_path = $ssh_path."/config";
     $config = @file_get_contents($ssh_config_path);
-    $config_host_line = TAB."Host ".$ssh_identifier;
+    $config_host_line = "Host ".$ssh_identifier;
     if(!strpos($config, $config_host_line)) {
         $fh = @fopen($ssh_config_path, 'w') or die(wrap("Can't open file: ".$ssh_config_path));
         fwrite($fh, wrap($config_host_line));
