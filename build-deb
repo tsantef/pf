@@ -1,0 +1,12 @@
+#!/bin/sh
+
+version=$(cat lib/version.php | grep VERSION | sed "s/^.*, '//;s/'.*//g")
+
+sed "s/<version>/$version/g" debpkg/DEBIAN/control.template > debpkg/DEBIAN/control
+
+rm -rf debpkg/usr/local/phpfog
+mkdir -p debpkg/usr/local/phpfog
+cp -r bin debpkg/usr/local/phpfog
+cp -r lib debpkg/usr/local/phpfog
+
+dpkg-deb --build debpkg .
