@@ -149,6 +149,7 @@ class PHPFog {
             $this->session = json_decode(file_get_contents($this->session_path), true);
         } else {
             $this->session = array();
+            $this->session['api-auth-token'] = "";
         }
     }
 

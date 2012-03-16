@@ -30,10 +30,10 @@ function pf_setup($argv) {
 
     # Create an ssh key
     $ssh_path = realpath(HOME.".ssh");
-    $ssh_key_name = "~/.ssh/".$ssh_identifier;
-    $ssh_real_path = HOME.".ssh/".$ssh_identifier;
+    $ssh_key_name = str_replace("/", DS, "~/.ssh/".$ssh_identifier);
+    $ssh_real_path = str_replace("/", DS, HOME.".ssh/".$ssh_identifier);
     if (!file_exists($ssh_real_path)) {
-        $exit_code = execute("ssh-keygen -q -t rsa -b 2048 -f ".$ssh_key_name);
+        $exit_code = execute("ssh-keygen -q -t rsa -b 2048 -f ".$ssh_real_path);
         if ($exit_code != 0) {
             die('Failed to generate ssh key');
         }
@@ -75,13 +75,5 @@ function pf_setup($argv) {
     echo wrap("For more information visit: ".bwhite("http://dev.appfog.com/features/article/pf_command_line_tool"));
 
     return true;
-}
-
-function has_bin($name) {
-    $output = null;
-	exec("which ".$name, $output);
-    $line = trim(current($output));
-    unset($output);
-	return file_exists($line);
 }
 ?>

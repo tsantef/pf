@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 
+define("PLATFORM", platform());
 define("DS", DIRECTORY_SEPARATOR);
 define("WORKING_DIR", getcwd());
 
@@ -8,6 +9,26 @@ define("LIB_PATH", dirname(__FILE__).DS.'..'.DS.'lib'.DS);
 
 # Fix the arguments and count
 array_shift($argv);
+
+function platform() {
+    define("OSX", 'osx');
+    define('LINUX', 'linux');
+    define("WINDOWS", 'windows');
+    define("OTHER", 'other');
+
+    $os = strtoupper(PHP_OS);
+    switch ($os) {
+        case 'DARWIN':
+            return OSX;
+        case 'LINUX':
+            return LINUX;
+        default:
+            if (substr($os, 0, 3) === 'WIN') {
+                return WINDOWS;
+            }
+            return OTHER;
+    }
+}
 
 # Load everything after fixing arguments
 require_once LIB_PATH.'version.php';
