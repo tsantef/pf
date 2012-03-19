@@ -1,6 +1,6 @@
 <?php
 function pf_logout($argv) {
-	$phpfog = new PHPFog();
+	$phpfog = new PHPFog(false);
 	$phpfog->logout();
 	return true;
 }

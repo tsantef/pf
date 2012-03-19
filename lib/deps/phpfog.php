@@ -6,10 +6,11 @@ class PHPFog {
     public $session = null;
     private $session_path = null;
 
-    public function __construct() {
+    public function __construct($show_login=true) {
         $this->session_path = HOME.".pf-command-session";
         $this->load_session();
         $this->phpfog = new \PestJSON((isset($_ENV['PHPFOG_URL']) && $_ENV['PHPFOG_URL'] != '') ? $_ENV['PHPFOG_URL'] : "https://www.phpfog.com");
+        if ($show_login && $this->username() <> "") echo wrap("Running command as ".bwhite($this->username()));
     }
 
     # --- Clouds --- #
@@ -106,7 +107,7 @@ class PHPFog {
     }
 
     public function logout() {
-        unlink($this->session_path);
+        @unlink($this->session_path);
     }
 
     public function username() {
@@ -130,9 +131,12 @@ class PHPFog {
                 $this->login();
                 $result = is_object($block) ? $block() : $block;
             } catch (Exception $e) {
-                falure_message($this->get_api_error_message());
+                failure_message("Error: ".$e->getMessage());
                 exit(1);
             }
+        } catch (PestJSON_BadRequest $e) {
+            failure_message("There was a problem making that request. Please try again.");
+            exit(1);
         }
 
         return $result;

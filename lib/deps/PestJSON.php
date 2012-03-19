@@ -147,6 +147,7 @@ class PestJSON {
     }
 
     private function doRequest($curl) {
+        //curl_setopt($curl, CURLOPT_VERBOSE, true); 
         $body = curl_exec($curl);
         $meta = curl_getinfo($curl);
 
