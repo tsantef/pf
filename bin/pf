@@ -15,16 +15,20 @@ require_once LIB_PATH.'loader.php';
 
 if (!CommandLine::run($argv)) {
     echo <<<EOF
-Usage: pf setup
-       pf update
-       pf list [clouds|apps <cloud_id>|sshkeys]
-       pf details [<appname>|<app_id>]
-       pf clone [<appname>|<app_id>] [directory]
-       pf pull
-       pf push
-       pf delete [app|sshkey] [<appname>|<app_id>|<ssh_key_id>]
-       pf whoami
-       pf logout
+usage: pf <command>
+
+Commands:
+----------
+clone   (<appname> | <app_id>) [directory]
+delete  (app (<appname> | <app_id>) | sshkey <ssh_key_id>)
+details (<appname> | <app_id>)
+list    ((clouds | apps) <cloud_id>) | sshkeys
+logout
+pull
+push
+setup
+update
+whoami
 
 EOF;
 }

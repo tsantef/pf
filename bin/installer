@@ -1,4 +1,3 @@
-#!/usr/bin/env php
 <?php
 define("PLATFORM", platform());
 define("DS", DIRECTORY_SEPARATOR);
@@ -6,7 +5,6 @@ define("DOWNLOAD_URL", "https://github.com/phpfog/pf/zipball/master");
 define("PKG_DIR", str_replace('/', DS, "/usr/local/phpfog"));
 define("INSTALL_DIR", str_replace("/", DS, PKG_DIR."/pf"));
 define("BIN_DIR", str_replace("/", DS, "/usr/local/bin"));
-define("TAB_SPACE", "    ");
 
 array_shift($argv);
 $err;
@@ -14,20 +12,20 @@ $err;
 # Run through all arguments
 foreach ($argv as $arg) {
     switch ($arg) {
-        case '-h':
         case '--help':
             display_help();
             exit(0);
             break;
-        case '-c':
         case '--check':
             exit(check_deps());
             break;
-        case '-f':
         case '--force':
             install();
             break;
-        case '-u':
+        case '--update':
+            update();
+            exit(0);
+            break;
         case '--uninstall':
             uninstall();
             exit(0);
@@ -52,7 +50,7 @@ function check_deps() {
     $errors = array();
     $supported = array(OSX, LINUX);
 
-    if (!in_array(PLATFORM, $supported)) { 
+    if (!in_array(PLATFORM, $supported)) {
         $errors[] = "The current os (".PHP_OS.") is not supported";
     }
 
@@ -60,7 +58,7 @@ function check_deps() {
         $errors[] = "Minimum required php version not met.";
     }
 
-    if (extension_loaded('curl')===false) {
+    if (extension_loaded('curl') === false) {
         $errors[] = "The curl extension for php is not loaded.";
     }
 
@@ -71,7 +69,7 @@ function check_deps() {
     if (!empty($errors)) {
         echo wrap('PF cannot be installed for the following reasons:');
         foreach ($errors as $error) {
-            error(TAB_SPACE.$error);
+            error("    ".$error);
         }
         echo PHP_EOL;
         return 0;
@@ -166,6 +164,14 @@ function uninstall() {
     }
 }
 
+# Update the user's pf installation
+function update() {
+    # Version check
+    # If different
+    # uninstall
+    # install
+}
+
 function rrmdir($dir) {
     if (is_dir($dir)) {
         $objects = scandir($dir);
@@ -239,10 +245,10 @@ function display_help() {
 PF Installer
 ------------
 Options
--h, --help       Display this text
--c, --check      Display the environment info
--f, --force      Forces the installation
--u, --uninstall  Uninstall all associated files
+--help       Display this text
+--check      Display the environment info
+--force      Forces the installation
+--uninstall  Uninstall all associated files
 
 EOF;
 }
