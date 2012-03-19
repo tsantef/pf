@@ -1,10 +1,11 @@
 <?php
 function pf_whoami($argv) {
-    $phpfog = new PHPFog();
+    $phpfog = new PHPFog(false);
     if ($phpfog->session['username'] == null) {
-        echo "Not logged in".PHP_EOL;
+        failure_message("Not logged in");
     } else {
-        echo "Logged in as \033[1;37m".$phpfog->session['username']."\033[0m".PHP_EOL;
+        echo wrap("Logged in as ".bwhite($phpfog->session['username']));
     }
+    return true;
 }
 ?>

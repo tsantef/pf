@@ -1,12 +1,10 @@
 <?php
-
 function pf_update($argv) {
-    
     # Copy repo to temp folder
     $temp_git_folder = temp_folder();
     cp_r(WORKING_DIR, $temp_git_folder);
 
-    $prefix = "cd $temp_git_folder && ";
+    $prefix = "cd ".$temp_git_folder." && ";
 
     # Checkout pf-deploy branch
     execute($prefix."git checkout -b pf-deploy");
@@ -27,10 +25,10 @@ function pf_update($argv) {
         $path = $matches[2];
 
         # Delete sub module repo
-        rm_rf("$temp_git_folder/$path/.git");
+        rm_rf($temp_git_folder.'/'.$path."/.git");
 
         # Clear git cache
-        execute($prefix."git rm --cached $path");
+        execute($prefix."git rm --cached ".$path);
     }
 
     # Add changes
@@ -47,5 +45,4 @@ function pf_update($argv) {
 
     return true;
 }
-
 ?>

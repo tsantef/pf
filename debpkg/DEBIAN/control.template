@@ -1,0 +1,13 @@
+Package: pf-cli
+Source: 
+Version: <version>
+Maintainer: tim@appfog.com
+Installed-Size: 1000
+Depends: curl, php5-cli, php5-curl, git-core
+Conflicts:
+Replaces:
+Section:
+Architecture:all
+Priority: optional
+Homepage: https://github.com/phpfog/pf
+Description: PHP Fog command line tool - you can use this command line tool to setup your local system to edit your code and to push changes with git submodule dependencies. 

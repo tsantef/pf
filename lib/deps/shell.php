@@ -1,11 +1,11 @@
 <?php
 
 # Run a shell command
-function execute($cmd, &$output=null) {
+function execute($cmd, &$output = null) {
     $output_array = null;
     $exit_code = null;
     exec($cmd, $output_array, $exit_code);
-    if (is_array($output_array)) { 
+    if (is_array($output_array)) {
         $output = join("\n", $output_array);
     }
     return $exit_code;
@@ -58,8 +58,13 @@ function rm_rf($dir) {
 # Prompt for input
 function prompt($msg, $pw = false) {
     echo "$msg";
-    if ($pw == true) { system('stty -echo'); }
+    if ($pw == true) {
+        system('stty -echo');
+    }
     $input = trim(fgets(fopen('php://stdin', 'r')));
-    if ($pw == true) { system('stty echo'); echo PHP_EOL; }
-    return $input; 
+    if ($pw == true) {
+        system('stty echo');
+        echo PHP_EOL;
+    }
+    return $input;
 }
