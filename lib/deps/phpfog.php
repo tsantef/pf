@@ -6,10 +6,11 @@ class PHPFog {
     public $session = null;
     private $session_path = null;
 
-    public function __construct() {
-        $this->session_path = HOME . ".pf-command-session";
+    public function __construct($show_login=true) {
+        $this->session_path = HOME.".pf-command-session";
         $this->load_session();
-        $this->phpfog = new \PestJSON((isset($_ENV['PHPFOG_URL']) && $_ENV['PHPFOG_URL'] != "") ? $_ENV['PHPFOG_URL'] : "https://www.phpfog.com");
+        $this->phpfog = new \PestJSON((isset($_ENV['PHPFOG_URL']) && $_ENV['PHPFOG_URL'] != '') ? $_ENV['PHPFOG_URL'] : "https://www.phpfog.com");
+        if ($show_login && $this->username() <> "") echo wrap("Running command as ".bwhite($this->username()));
     }
 
     # --- Clouds --- #
@@ -25,7 +26,7 @@ class PHPFog {
     # --- Apps --- #
 
     function get_apps($cloud_id=null) {
-        $request_url = ($cloud_id != null) ? "/clouds/$cloud_id/apps" : "/apps";
+        $request_url = ($cloud_id != null) ? "/clouds/".$cloud_id."/apps" : "/apps";
         $client = $this;
         $response = $this->api_call(function() use ($client, $request_url) {
             return $client->phpfog->get($request_url, array("Api-Auth-Token: ".$client->session['api-auth-token']));
@@ -36,7 +37,7 @@ class PHPFog {
     function get_app($app_id) {
         $client = $this;
         $response = $this->api_call(function() use ($client, $app_id) {
-            return $client->phpfog->get("/apps/$app_id", array("Api-Auth-Token: ".$client->session['api-auth-token']));
+            return $client->phpfog->get("/apps/".$app_id, array("Api-Auth-Token: ".$client->session['api-auth-token']));
         });
         return $response;
     }
@@ -57,7 +58,7 @@ class PHPFog {
     function delete_app($app_id) {
         $client = $this;
         $response = $this->api_call(function() use ($client, $app_id) {
-            return $client->phpfog->delete("/apps/$app_id", array("Api-Auth-Token: ".$client->session['api-auth-token']));
+            return $client->phpfog->delete("/apps/".$app_id, array("Api-Auth-Token: ".$client->session['api-auth-token']));
         });
         return $response;
     }
@@ -84,7 +85,7 @@ class PHPFog {
     function delete_sshkey($sshkey_id) {
         $client = $this;
         $response = $this->api_call(function() use ($client, $sshkey_id) {
-            return $client->phpfog->delete("/ssh_keys/$sshkey_id", array("Api-Auth-Token: ".$client->session['api-auth-token']));
+            return $client->phpfog->delete("/ssh_keys/".$sshkey_id, array("Api-Auth-Token: ".$client->session['api-auth-token']));
         });
         return $response;
     }
@@ -106,7 +107,7 @@ class PHPFog {
     }
 
     public function logout() {
-        unlink($this->session_path);
+        @unlink($this->session_path);
     }
 
     public function username() {
@@ -129,10 +130,16 @@ class PHPFog {
             try {
                 $this->login();
                 $result = is_object($block) ? $block() : $block;
+            } catch (PestJSON_Unauthorized $e) {
+                failure_message("Invalid login or password. Please try again.");
+                exit(1);
             } catch (Exception $e) {
-                falure_message($this->get_api_error_message());
+                failure_message("Error: ".$e->getMessage());
                 exit(1);
             }
+        } catch (PestJSON_BadRequest $e) {
+            failure_message("There was a problem making that request. Please try again.");
+            exit(1);
         }
 
         return $result;
@@ -145,11 +152,7 @@ class PHPFog {
     }
 
     function load_session() {
-        if (file_exists($this->session_path)) {
-            $this->session = json_decode(file_get_contents($this->session_path), true);
-        } else {
-            $this->session = array();
-        }
+        $this->session = file_exists($this->session_path) ? json_decode(file_get_contents($this->session_path), true) : array();
     }
 
     function save_session() {

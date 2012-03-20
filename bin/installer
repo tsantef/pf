@@ -1,33 +1,43 @@
-#!/usr/bin/env php
 <?php
 define("PLATFORM", platform());
 define("DS", DIRECTORY_SEPARATOR);
 define("DOWNLOAD_URL", "https://github.com/phpfog/pf/zipball/master");
-define("PKG_DIR", str_replace('/', DS, "/usr/local/phpfog"));
+define("PKG_DIR", get_package_dir());
 define("INSTALL_DIR", str_replace("/", DS, PKG_DIR."/pf"));
 define("BIN_DIR", str_replace("/", DS, "/usr/local/bin"));
-define("TAB_SPACE", "    ");
 
 array_shift($argv);
 $err;
 
+function get_package_dir() {
+    switch (PLATFORM) {
+        case OSX:
+        case LINUX:
+            return str_replace('/', DS, "/usr/local/phpfog");
+            break;
+        case WINDOWS:
+            return str_replace('\\', DS, $_SERVER['USERPROFILE']."\\PHPFog");
+            break;
+    }
+}
+
 # Run through all arguments
 foreach ($argv as $arg) {
     switch ($arg) {
-        case '-h':
         case '--help':
             display_help();
             exit(0);
             break;
-        case '-c':
         case '--check':
             exit(check_deps());
             break;
-        case '-f':
         case '--force':
             install();
             break;
-        case '-u':
+        case '--update':
+            update();
+            exit(0);
+            break;
         case '--uninstall':
             uninstall();
             exit(0);
@@ -50,9 +60,9 @@ function clean($r = '', $error) {
 
 function check_deps() {
     $errors = array();
-    $supported = array(OSX, LINUX);
+    $supported = array(OSX, LINUX, WINDOWS);
 
-    if (!in_array(PLATFORM, $supported)) { 
+    if (!in_array(PLATFORM, $supported)) {
         $errors[] = "The current os (".PHP_OS.") is not supported";
     }
 
@@ -60,7 +70,7 @@ function check_deps() {
         $errors[] = "Minimum required php version not met.";
     }
 
-    if (extension_loaded('curl')===false) {
+    if (extension_loaded('curl') === false) {
         $errors[] = "The curl extension for php is not loaded.";
     }
 
@@ -71,7 +81,7 @@ function check_deps() {
     if (!empty($errors)) {
         echo wrap('PF cannot be installed for the following reasons:');
         foreach ($errors as $error) {
-            error(TAB_SPACE.$error);
+            error("    ".$error);
         }
         echo PHP_EOL;
         return 0;
@@ -84,19 +94,20 @@ function check_deps() {
 # Install needed files
 function install() {
     $source_package = tempnam('/tmp', '');
+    unlink($source_package);
+
+    info('Downloading source package...');
+    if (!@download(DOWNLOAD_URL, $source_package)) {
+        $err = error_get_last();
+        error('Failed to download installation package. '.$err['message']);
+        exit(1);
+    }
 
     info('Preparing installation directory ('.INSTALL_DIR.')...');
     rrmdir(PKG_DIR);
     if (!is_dir(INSTALL_DIR) && !@mkdir(INSTALL_DIR, 0777, true)) {
         $err = error_get_last();
-        error('Failed to create installation folder ('.clean(INSTALL_DIR.').', $err['message']));
-        exit(1);
-    }
-
-    info('Downloading source package...');
-    if (!@copy(DOWNLOAD_URL, $source_package)) {
-        $err = error_get_last();
-        error('Failed to download installation package.'.clean($err['message']));
+        error('Failed to create installation folder ('.clean(INSTALL_DIR.'.', $err['message']) .')');
         exit(1);
     }
 
@@ -144,13 +155,33 @@ function install() {
         exit(1);
     }
 
-    if (!@symlink(INSTALL_DIR.DS."bin".DS."pf", BIN_DIR.DS."pf")) {
-        $err = error_get_last();
-        error("Failed to make a symlink of ".clean(INSTALL_DIR.DS."bin".DS."pf.", $err['message']));
-        exit(1);
+    $post_install_message = "";
+
+    if (PLATFORM != WINDOWS) {
+        if (!@symlink(INSTALL_DIR.DS."bin".DS."pf", BIN_DIR.DS."pf")) {
+            $err = error_get_last();
+            error("Failed to make a symlink of ".clean(INSTALL_DIR.DS."bin".DS."pf.", $err['message']));
+            exit(1);
+        }
+    } else {
+        if (!stripos($_SERVER['PATH'], INSTALL_DIR.DS."bine")) {
+            $post_install_message = "You must add the following to your path: %USERPROFILE%\PHPFog\pf\bin";
+        }
     }
 
     success('Installation Successfull.');
+    if ($post_install_message != "") { info($post_install_message); }
+}
+
+function download($url, $path) {
+   /* $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $data = curl_exec($ch);
+    curl_close($ch);
+    file_put_contents($path, $data);*/
+    exec(sprintf("curl -sL -o \"%s\" %s", $path, $url), $output, $exit_code);
+
+    return true;
 }
 
 # Remove associated files
@@ -164,6 +195,14 @@ function uninstall() {
         error("Failed to remove ".clean(BIN_DIR.DS."pf.", $err['message']));
         exit(1);
     }
+}
+
+# Update the user's pf installation
+function update() {
+    # Version check
+    # If different
+    # uninstall
+    # install
 }
 
 function rrmdir($dir) {
@@ -203,7 +242,11 @@ function error($message) {
 }
 
 function colorize($str, $color) {
-    return sprintf("\033[0;".$color."m%s\033[0m", $str);
+    if (PLATFORM != WINDOWS) {
+        return sprintf("\033[0;".$color."m%s\033[0m", $str);
+    } else {
+        return $str;
+    }
 }
 
 function platform() {
@@ -228,10 +271,14 @@ function platform() {
 
 function has_bin($name) {
     $output = null;
-    exec("which ".$name, $output);
-    $line = trim(current($output));
+    $exit_code = null;
+    if (PLATFORM != WINDOWS) {
+        exec("which ".$name, $output, $exit_code);
+    } else {
+        exec("where /Q ".$name.".exe", $output, $exit_code);
+    }
     unset($output);
-    return file_exists($line);
+    return $exit_code == 0;
 }
 
 function display_help() {
@@ -239,10 +286,10 @@ function display_help() {
 PF Installer
 ------------
 Options
--h, --help       Display this text
--c, --check      Display the environment info
--f, --force      Forces the installation
--u, --uninstall  Uninstall all associated files
+--help       Display this text
+--check      Display the environment info
+--force      Forces the installation
+--uninstall  Uninstall all associated files
 
 EOF;
 }
