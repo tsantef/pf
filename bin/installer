@@ -140,7 +140,7 @@ function install() {
                 rename($filename, INSTALL_DIR.DS.$basename);
             }
         }
-        if (!@rmdir($inner_folder)) {
+        if (!@rrmdir($inner_folder)) {
             $err = error_get_last();
             error("Failed to remove ".clean($inner_folder.'.', $err['message']));
             exit(1);
@@ -180,8 +180,6 @@ function download($url, $path) {
     curl_close($ch);
     file_put_contents($path, $data);*/
     exec(sprintf("curl -sL -o \"%s\" %s", $path, $url), $output, $exit_code);
-
-
 
     return true;
 }
