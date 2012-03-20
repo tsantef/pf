@@ -140,7 +140,7 @@ function install() {
                 rename($filename, INSTALL_DIR.DS.$basename);
             }
         }
-        if (!@rmdir($inner_folder)) {
+        if (!@rrmdir($inner_folder)) {
             $err = error_get_last();
             error("Failed to remove ".clean($inner_folder.'.', $err['message']));
             exit(1);
@@ -207,8 +207,8 @@ function update() {
 
 function rrmdir($dir) {
     if (is_dir($dir)) {
-        $objects = scandir($dir);
-        foreach ($objects as $obj) {
+        $objects = @scandir($dir);
+        if ($objects != null) foreach ($objects as $obj) {
             if ($obj != '.' && $obj != '..') {
                 $path = $dir.DS.$obj;
                 if (filetype($path) == "dir") {
