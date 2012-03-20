@@ -1,4 +1,6 @@
 <?php
+define("USECOLOR", usecolor());
+
 function wrap($msg) {
     return $msg.PHP_EOL;
 }
@@ -21,8 +23,18 @@ function echo_item($name, $id, $description = null) {
     }
 }
 
+function usecolor() {
+    if (!function_exists("posix_isatty")) { return false; }
+    if (!posix_isatty(STDOUT)) { return false; }
+    return true;
+}
+
 function colorize($str, $color) {
-    return sprintf("\033[0;".$color."m%s\033[0m", $str);
+    if (USECOLOR) {
+        return sprintf("\033[0;".$color."m%s\033[0m", $str);
+    } else {
+        return $str;
+    }
 }
 
 function bwhite($str) {

@@ -47,9 +47,15 @@ Missing Requirement: **Cannot find git executable.** You can install git by typi
 
 ### Windows
 
-Comming soon.
+    curl -s https://raw.github.com/phpfog/pf/master/bin/installer | php
 
+sh.exe": php: command not found
 
+The curl extension for php is not loaded.
+
+uncomment out the curl extension in the php.ini
+
+extension=php_curl.dll 
 
 ## Usage
 

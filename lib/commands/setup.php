@@ -18,7 +18,7 @@ function pf_setup($argv) {
     }
 
     # Test Connection to PHPFog API
-    $phpfog = new PHPFog();
+    $phpfog = new PHPFog(false);
     try {
         $has_api = $phpfog->login();
     } catch (Exception $e) {
@@ -31,20 +31,21 @@ function pf_setup($argv) {
     $ssh_identifier = preg_replace("/[^A-Za-z0-9-]/", '-', $phpfog->username());
 
     # Create an ssh key
-    $ssh_path = realpath(HOME.".ssh");
-    $ssh_key = $ssh_path.'/'.$ssh_identifier;
-    if (!file_exists($ssh_key)) {
-        $exit_code = execute("ssh-keygen -q -t rsa -b 2048 -f ".$ssh_key);
+    $ssh_real_path = str_replace("/", DS, HOME.".ssh/".$ssh_identifier);
+    if (!file_exists($ssh_real_path)) {
+        $exit_code = execute("ssh-keygen -q -t rsa -b 2048 -f ".$ssh_real_path);
         if ($exit_code != 0) {
             die(wrap(red('Failed to generate ssh key')));
         }
     }
 
     # Add ssh to config
+    $ssh_path = realpath(HOME.".ssh");
+    $ssh_key = str_replace("/", DS, "~/.ssh/".$ssh_identifier);
     $ssh_config_path = $ssh_path."/config";
     $config = @file_get_contents($ssh_config_path);
     $config_host_line = "Host ".$ssh_identifier;
-    if(!strpos($config, $config_host_line)) {
+    if (strpos($config, $config_host_line) === false) {
         $fh = @fopen($ssh_config_path, 'w') or die(wrap("Can't open file: ".$ssh_config_path));
         fwrite($fh, wrap($config_host_line));
         fwrite($fh, wrap(TAB."HostName git01.phpfog.com"));
@@ -54,7 +55,7 @@ function pf_setup($argv) {
         fclose($fh);
     }
 
-    $pubkey = file_get_contents($ssh_key.".pub");
+    $pubkey = file_get_contents($ssh_real_path.".pub");
 
     try {
         $phpfog->new_sshkey('', $pubkey);
@@ -76,13 +77,5 @@ function pf_setup($argv) {
     echo wrap("For more information visit: ".bwhite("http://dev.appfog.com/features/article/pf_command_line_tool"));
 
     return true;
-}
-
-function has_bin($name) {
-    $output = null;
-	exec("which ".$name, $output);
-    $line = trim(current($output));
-    unset($output);
-	return file_exists($line);
 }
 ?>

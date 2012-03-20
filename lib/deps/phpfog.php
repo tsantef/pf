@@ -130,6 +130,9 @@ class PHPFog {
             try {
                 $this->login();
                 $result = is_object($block) ? $block() : $block;
+            } catch (PestJSON_Unauthorized $e) {
+                failure_message("Invalid login or password. Please try again.");
+                exit(1);
             } catch (Exception $e) {
                 failure_message("Error: ".$e->getMessage());
                 exit(1);
