@@ -140,7 +140,7 @@ function install() {
                 rename($filename, INSTALL_DIR.DS.$basename);
             }
         }
-        if (!@rrmdir($inner_folder)) {
+        if (!@rmdir($inner_folder)) {
             $err = error_get_last();
             error("Failed to remove ".clean($inner_folder.'.', $err['message']));
             exit(1);
