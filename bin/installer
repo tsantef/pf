@@ -165,7 +165,7 @@ function install() {
         }
     } else {
         if (!stripos($_SERVER['PATH'], INSTALL_DIR.DS."bine")) {
-            $post_install_message = "You must add the folling to your path: %USERPROFILE%\PHPFog\pf\bin";
+            $post_install_message = "You must add the following to your path: %USERPROFILE%\PHPFog\pf\bin";
         }
     }
 
@@ -244,7 +244,11 @@ function error($message) {
 }
 
 function colorize($str, $color) {
-    return sprintf("\033[0;".$color."m%s\033[0m", $str);
+    if (PLATFORM != WINDOWS) {
+        return sprintf("\033[0;".$color."m%s\033[0m", $str);
+    } else {
+        return $str;
+    }
 }
 
 function platform() {
