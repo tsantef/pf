@@ -181,8 +181,6 @@ function download($url, $path) {
     file_put_contents($path, $data);*/
     exec(sprintf("curl -sL -o \"%s\" %s", $path, $url), $output, $exit_code);
 
-
-
     return true;
 }
 
@@ -244,7 +242,11 @@ function error($message) {
 }
 
 function colorize($str, $color) {
-    return sprintf("\033[0;".$color."m%s\033[0m", $str);
+    if (PLATFORM != WINDOWS) {
+        return sprintf("\033[0;".$color."m%s\033[0m", $str);
+    } else {
+        return $str;
+    }
 }
 
 function platform() {
