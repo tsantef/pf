@@ -140,7 +140,7 @@ function install() {
                 rename($filename, INSTALL_DIR.DS.$basename);
             }
         }
-        if (!@rrmdir($inner_folder)) {
+        if (!@rmdir($inner_folder)) {
             $err = error_get_last();
             error("Failed to remove ".clean($inner_folder.'.', $err['message']));
             exit(1);
@@ -181,6 +181,8 @@ function download($url, $path) {
     file_put_contents($path, $data);*/
     exec(sprintf("curl -sL -o \"%s\" %s", $path, $url), $output, $exit_code);
 
+
+
     return true;
 }
 
@@ -207,8 +209,8 @@ function update() {
 
 function rrmdir($dir) {
     if (is_dir($dir)) {
-        $objects = @scandir($dir);
-        if ($objects != null) foreach ($objects as $obj) {
+        $objects = scandir($dir);
+        foreach ($objects as $obj) {
             if ($obj != '.' && $obj != '..') {
                 $path = $dir.DS.$obj;
                 if (filetype($path) == "dir") {
@@ -242,11 +244,7 @@ function error($message) {
 }
 
 function colorize($str, $color) {
-    if (PLATFORM != WINDOWS) {
-        return sprintf("\033[0;".$color."m%s\033[0m", $str);
-    } else {
-        return $str;
-    }
+    return sprintf("\033[0;".$color."m%s\033[0m", $str);
 }
 
 function platform() {
