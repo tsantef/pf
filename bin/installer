@@ -7,7 +7,7 @@ define("PKG_DIR", get_package_dir());
 define("INSTALL_DIR", str_replace("/", DS, PKG_DIR."/pf"));
 define("BIN_DIR", str_replace("/", DS, "/usr/local/bin"));
 
-$edge = false;
+global $edge; $edge  = false;
 
 array_shift($argv);
 $err;
@@ -99,21 +99,23 @@ function check_deps() {
 
 # Install needed files
 function install() {
+    global $edge;
     $source_package = tempnam('/tmp', '');
     unlink($source_package);
-
-    info('Downloading source package...');
-    if (!@download((!$edge)?DOWNLOAD_URL:DOWNLOAD_EDGE_URL, $source_package)) {
-        $err = error_get_last();
-        error('Failed to download installation package. '.$err['message']);
-        exit(1);
-    }
 
     info('Preparing installation directory ('.INSTALL_DIR.')...');
     rrmdir(PKG_DIR);
     if (!is_dir(INSTALL_DIR) && !@mkdir(INSTALL_DIR, 0777, true)) {
         $err = error_get_last();
         error('Failed to create installation folder ('.clean(INSTALL_DIR.'.', $err['message']) .')');
+        exit(1);
+    }
+
+    info('Downloading source package...');
+    $download_url = ($edge==false) ? DOWNLOAD_URL : DOWNLOAD_EDGE_URL;
+    if (!@download($download_url, $source_package)) {
+        $err = error_get_last();
+        error('Failed to download installation package. '.$err['message']);
         exit(1);
     }
 
@@ -296,6 +298,7 @@ Options
 --check      Display the environment info
 --force      Forces the installation
 --uninstall  Uninstall all associated files
+--edge       Installs the edge version
 
 EOF;
 }
