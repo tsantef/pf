@@ -1,7 +1,30 @@
 <?php
 function pf_push($argv) {
-    $phpfog = new PHPFog();
-    system("git push");
+    system("git update-index -q --ignore-submodules --refresh");
+
+    # Detect unclean repo
+    execute("git status --porcelain", $output);
+    if ($output != "") {
+        echo wrap("There are uncommited changes.");
+        $commit_message = prompt("Enter a commit message to checkin changes: ");
+        if ($commit_message != "") {
+            system("git add -A");
+            system("git commit -m \"$commit_message\"");
+        } else {
+            if (strtolower(prompt("No commit message given, do you want to continue without commiting?[yN]: ")) != 'y') return true;
+        }
+    }
+
+    # Detect git summodules
+    execute("git config --list | grep '^submodule.' | wc -l", $output);
+    $has_submodules = intval($output) > 0;
+
+    if (!$has_submodules) { 
+        system("git push");
+    } else {
+        return pf_deploy();
+    }
+
     return true;
 }
 ?>
