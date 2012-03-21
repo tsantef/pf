@@ -39,11 +39,11 @@ if (!CommandLine::run($argv)) {
 usage: pf <command>
 
 Commands:
-----------
+---------
 clone   (<appname> | <app_id>) [directory]
 delete  (app (<appname> | <app_id>) | sshkey <ssh_key_id>)
 details (<appname> | <app_id>)
-list    ((clouds | apps) <cloud_id>) | sshkeys
+list    (clouds | apps [cloud_id] | sshkeys)
 logout
 pull
 push

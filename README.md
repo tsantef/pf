@@ -7,7 +7,7 @@
 * PHP-CLI
 * Curl
 * Curl extension for PHP
-* git
+* Git
 
 ### OSX (Lion)
 
@@ -57,18 +57,19 @@ Missing Requirement: **The bin folder (/usr/local/bin) folder does not exists.**
 1. Create the directory `/usr/local/bin`
 2. Make sure `/usr/local/bin` is in your path.
 
-
-### Windows
+### Windows (with XAMPP, Git for Windows, and Git Bash)
 
     curl -s https://raw.github.com/phpfog/pf/master/bin/installer | php
+    
+#### Troubleshoot Windows Installation
 
-sh.exe": php: command not found
+Error: **sh.exe": php: command not found**
 
-The curl extension for php is not loaded.
+Cause: The curl extension for php is not loaded.
 
-uncomment out the curl extension in the php.ini
+Fix: uncomment out the curl extension in the php.ini
 
-extension=php_curl.dll 
+    extension=php_curl.dll 
 
 ## Usage
 
@@ -80,29 +81,23 @@ Creats and uploads a public ssh key.
 
     pf setup
 
-#### Update
-
-Deploys an app using git submodules.
-
-	pf update
-
 #### List	
 
 Lists clouds, apps, and sshkeys.
 
-	pf list [clouds|apps <cloud_id>|sshkeys]
+	pf list (clouds | apps [cloud_id] | sshkeys)
 	
 #### Details
 
 Shows an apps details.
 
-    pf details [<appname>|<app_id>]
+    pf details (<appname> | <app_id>)
 
 #### Clone
 
 Pull down an app for the first time.
 
-	pf clone [<appname>|<app_id>] [directory]
+	clone (<appname> | <app_id>) [directory]
 
 #### Pull
 
@@ -126,7 +121,7 @@ Deploys an app using git submodules.
 
 Deletes a remote app or remote ssh key. 
 
-	pf delete [app|sshkey] [<appname>|<app_id>|<ssh_key_id>]
+	pf delete (app (<appname> | <app_id>) | sshkey <ssh_key_id>)
 	
 #### Whoami
 
