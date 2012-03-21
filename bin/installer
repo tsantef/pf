@@ -2,9 +2,12 @@
 define("PLATFORM", platform());
 define("DS", DIRECTORY_SEPARATOR);
 define("DOWNLOAD_URL", "https://github.com/phpfog/pf/zipball/master");
+define("DOWNLOAD_EDGE_URL", "https://github.com/phpfog/pf/zipball/edge");
 define("PKG_DIR", get_package_dir());
 define("INSTALL_DIR", str_replace("/", DS, PKG_DIR."/pf"));
 define("BIN_DIR", str_replace("/", DS, "/usr/local/bin"));
+
+$edge = false;
 
 array_shift($argv);
 $err;
@@ -41,6 +44,9 @@ foreach ($argv as $arg) {
         case '--uninstall':
             uninstall();
             exit(0);
+            break;
+        case '--edge'
+            $edge = false;
             break;
         default:
             break;
@@ -97,7 +103,7 @@ function install() {
     unlink($source_package);
 
     info('Downloading source package...');
-    if (!@download(DOWNLOAD_URL, $source_package)) {
+    if (!@download((!$edge)?DOWNLOAD_URL:DOWNLOAD_EDGE_URL, $source_package)) {
         $err = error_get_last();
         error('Failed to download installation package. '.$err['message']);
         exit(1);
