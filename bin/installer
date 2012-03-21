@@ -45,7 +45,7 @@ foreach ($argv as $arg) {
             uninstall();
             exit(0);
             break;
-        case '--edge'
+        case '--edge':
             $edge = false;
             break;
         default:
