@@ -46,7 +46,7 @@ foreach ($argv as $arg) {
             exit(0);
             break;
         case '--edge':
-            $edge = false;
+            $edge = true;
             break;
         default:
             break;
