@@ -5,7 +5,8 @@
 #### Requirements
 
 * PHP-CLI
-* curl
+* Curl
+* Curl extension for PHP
 * git
 
 ### OSX (Lion)
@@ -20,6 +21,12 @@ Missing Requirement: **Cannot find git executable.**
 
 1. Download and install git here: <a href="http://code.google.com/p/git-osx-installer/">http://code.google.com/p/git-osx-installer/</a>
 2. Open a new terminal window and run the curl installer again.
+
+Missing Requirement: **The bin folder (/usr/local/bin) folder does not exists.**
+
+1. Create the directory `/usr/local/bin`
+2. Make sure `/usr/local/bin` is in your path.
+
 
 ### Ubuntu (10.04.4-desktop-amd64)
 
@@ -44,6 +51,12 @@ Missing Requirement: **The curl extension for php is not loaded.** You can insta
 Missing Requirement: **Cannot find git executable.** You can install git by typing:
 
     sudo apt-get install git-core
+    
+Missing Requirement: **The bin folder (/usr/local/bin) folder does not exists.**
+
+1. Create the directory `/usr/local/bin`
+2. Make sure `/usr/local/bin` is in your path.
+
 
 ### Windows
 

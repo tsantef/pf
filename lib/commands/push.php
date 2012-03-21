@@ -19,7 +19,16 @@ function pf_push($argv) {
     execute("git config --list | grep '^submodule.' | wc -l", $output);
     $has_submodules = intval($output) > 0;
 
-    if (!$has_submodules) { 
+    if (!$has_submodules) {
+        # delete local pf-deploy branch
+        execute("git branch | grep 'pf-deploy' | wc -l", $output);
+        if (intval($output) > 0) execute("git branch -D pf-deploy");
+
+        # delete remote pf-deploy branch 
+        execute("git branch -r | grep 'pf-deploy' | wc -l", $output);
+        if (intval($output) > 0) execute("git push origin :pf-deploy", $ingnore);
+
+        # push
         system("git push");
     } else {
         return pf_deploy();
