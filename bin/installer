@@ -88,7 +88,7 @@ function check_deps() {
     }
 
     # Linux only checks
-    if (PLATFORM==WINDOWS) {
+    if (PLATFORM!=WINDOWS) {
         if (!is_dir(BIN_DIR)) {
             $errors[] = "The bin folder (".BIN_DIR.") folder does not exists.";
         }

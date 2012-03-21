@@ -6,7 +6,7 @@ function pf_push($argv) {
     execute("git status --porcelain", $output);
     if ($output != "") {
         echo wrap("There are uncommited changes.");
-        $commit_message = prompt("Enter a commit message to checkin changes: ");
+        $commit_message = prompt("Enter a commit message to check in changes: ");
         if ($commit_message != "") {
             system("git add -A");
             system("git commit -m \"$commit_message\"");
