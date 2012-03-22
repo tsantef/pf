@@ -202,7 +202,7 @@ function post_install() {
         echo PHP_EOL;
         return 0;
     } else {
-        success('Installation Successfull.');
+        success('Installation Successful.');
     }
 }
 
