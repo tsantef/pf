@@ -34,7 +34,7 @@ function platform() {
 require_once LIB_PATH.'version.php';
 require_once LIB_PATH.'loader.php';
 
-if (!CommandLine::run($argv)) {
+if (empty($argv) || !CommandLine::run($argv)) {
     echo <<<EOF
 usage: pf <command>
 
