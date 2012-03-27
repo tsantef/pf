@@ -22,10 +22,10 @@ function pf_setup($argv) {
     try {
         $has_api = $phpfog->login();
     } catch (Exception $e) {
-        echo wrap("Something blew up during login!");
+        failure_message("Something blew up during login!");
     }
     if (!$has_api) {
-        die(wrap('Failed to login'));
+        die(wrap(red('Failed to login')));
     }
 
     $ssh_identifier = preg_replace("/[^A-Za-z0-9-]/", '-', $phpfog->username());

@@ -1,14 +1,23 @@
 <?php
 function pf_login($argv) {
-  # Test Connection to PHPFog API
+  // Prevent php errors when not logged in
+  error_reporting(E_ALL ^ E_NOTICE);
+
   $phpfog = new PHPFog(false);
-  try {
-      $has_api = $phpfog->login();
-  } catch (Exception $e) {
-      echo wrap("Something blew up during login!");
-  }
-  if (!$has_api) {
-      die(wrap('Failed to login'));
+
+  if ($phpfog->username() == null) {
+    try {
+        $has_api = $phpfog->login();
+    } catch (Exception $e) {
+        failure_message("Something blew up during login!");
+    }
+    if ($has_api) {
+        success_message("Logged in as {$phpfog->username()}");
+    } else {
+        die(wrap(red('Failed to login')));
+    }
+  } else {
+      info_message("Already logged in as {$phpfog->username()}, please logout first.");
   }
 }
 ?>
