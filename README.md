@@ -129,6 +129,10 @@ Shows the current username logged in.
 
     pf whoami
     
+#### Login
+
+	pf login
+
 #### Logout
 
 	pf logout

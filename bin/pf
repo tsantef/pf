@@ -34,7 +34,7 @@ function platform() {
 require_once LIB_PATH.'version.php';
 require_once LIB_PATH.'loader.php';
 
-if (!CommandLine::run($argv)) {
+if (empty($argv) || !CommandLine::run($argv)) {
     echo <<<EOF
 usage: pf <command>
 
@@ -44,6 +44,7 @@ clone   (<appname> | <app_id>) [directory]
 delete  (app (<appname> | <app_id>) | sshkey <ssh_key_id>)
 details (<appname> | <app_id>)
 list    (clouds | apps [cloud_id] | sshkeys)
+login
 logout
 pull
 push
