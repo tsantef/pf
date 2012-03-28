@@ -77,7 +77,7 @@ Fix: uncomment out the curl extension in the php.ini
 
 #### Setup
 
-Creats and uploads a public ssh key.
+Creates and uploads a public ssh key.
 
     pf setup
 
@@ -89,7 +89,7 @@ Lists clouds, apps, and sshkeys.
 	
 #### Details
 
-Shows an apps details.
+Shows an app's details.
 
     pf details (<appname> | <app_id>)
 
