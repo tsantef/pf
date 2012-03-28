@@ -131,7 +131,7 @@ Shows the current username logged in.
     
 #### Login
 
-	pf login
+	pf login [username]
 
 #### Logout
 
