@@ -92,8 +92,8 @@ class PHPFog {
 
     # ---
 
-    public function login() {
-        $username = trim(prompt("PHP Fog Username: "));
+    public function login($username=null) {
+        if (empty($username)) $username = trim(prompt("PHP Fog Username: "));
         $password = trim(prompt("PHP Fog Password: ", true));
         $payload = array('login' => $username, 'password' => $password);
         $response = $this->phpfog->post("/user_session", $payload);
