@@ -18,7 +18,7 @@ class PHPFog {
     function get_clouds() {
         $client = $this;
         $response = $this->api_call(function() use ($client) {
-            return $client->phpfog->get("/dedicated_clouds", array("Api-Auth-Token: ".$client->session['api-auth-token']));
+            return $client->phpfog->get("/dedicated_clouds", array("Api-Auth-Token: ".$client->api_auth_token()));
         });
         return $response;
     }
@@ -29,7 +29,7 @@ class PHPFog {
         $request_url = ($cloud_id != null) ? "/clouds/".$cloud_id."/apps" : "/apps";
         $client = $this;
         $response = $this->api_call(function() use ($client, $request_url) {
-            return $client->phpfog->get($request_url, array("Api-Auth-Token: ".$client->session['api-auth-token']));
+            return $client->phpfog->get($request_url, array("Api-Auth-Token: ".$client->api_auth_token()));
         });
         return $response;
     }
@@ -37,7 +37,7 @@ class PHPFog {
     function get_app($app_id) {
         $client = $this;
         $response = $this->api_call(function() use ($client, $app_id) {
-            return $client->phpfog->get("/apps/".$app_id, array("Api-Auth-Token: ".$client->session['api-auth-token']));
+            return $client->phpfog->get("/apps/".$app_id, array("Api-Auth-Token: ".$client->api_auth_token()));
         });
         return $response;
     }
@@ -58,7 +58,7 @@ class PHPFog {
     function delete_app($app_id) {
         $client = $this;
         $response = $this->api_call(function() use ($client, $app_id) {
-            return $client->phpfog->delete("/apps/".$app_id, array("Api-Auth-Token: ".$client->session['api-auth-token']));
+            return $client->phpfog->delete("/apps/".$app_id, array("Api-Auth-Token: ".$client->api_auth_token()));
         });
         return $response;
     }
@@ -68,7 +68,7 @@ class PHPFog {
     function get_sshkeys() {
         $client = $this;
         $response = $this->api_call(function() use ($client) {
-            return $client->phpfog->get("/ssh_keys", array("Api-Auth-Token: ".$client->session['api-auth-token']));
+            return $client->phpfog->get("/ssh_keys", array("Api-Auth-Token: ".$client->api_auth_token()));
         });
         return $response;
     }
@@ -77,7 +77,7 @@ class PHPFog {
         $client = $this;
         $payload = array('name' => $ssh_key_name, 'key' => $ssh_key_key );
         $response = $this->api_call(function() use ($client, $payload) {
-            return $client->phpfog->post("/ssh_keys", $payload, array("Api-Auth-Token: ".$client->session['api-auth-token']));
+            return $client->phpfog->post("/ssh_keys", $payload, array("Api-Auth-Token: ".$client->api_auth_token()));
         });
         return $response;
     }
@@ -85,7 +85,7 @@ class PHPFog {
     function delete_sshkey($sshkey_id) {
         $client = $this;
         $response = $this->api_call(function() use ($client, $sshkey_id) {
-            return $client->phpfog->delete("/ssh_keys/".$sshkey_id, array("Api-Auth-Token: ".$client->session['api-auth-token']));
+            return $client->phpfog->delete("/ssh_keys/".$sshkey_id, array("Api-Auth-Token: ".$client->api_auth_token()));
         });
         return $response;
     }
@@ -98,20 +98,47 @@ class PHPFog {
         $payload = array('login' => $username, 'password' => $password);
         $response = $this->phpfog->post("/user_session", $payload);
         if ($this->phpfog->lastStatus() == 201) {
-            $this->session['api-auth-token'] = $response['api-auth-token'];
-            $this->session['username'] = $username;
+            $this->session['current_user'] = $username;
+            $this->session[$this->username()] = array();
+            $this->session[$this->username()]['api-auth-token'] = $response['api-auth-token'];
             $this->save_session();
             return true;
         }
         return false;
     }
 
-    public function logout() {
-        @unlink($this->session_path);
+    public function logout($username=null) {
+        if ($username == null) {
+            @unlink($this->session_path);
+            return true; 
+        } else {
+            if (array_key_exists($username, $this->session)) {
+                if ($this->username() == $username) unset($this->session['current_user']);
+                unset($this->session[$username]);
+                $this->save_session(); 
+                return true; 
+            }  
+        }
+        return false;
+    }
+
+    public function switch_user($username) {
+        if (array_key_exists($username, $this->session)) {
+            if (array_key_exists('api-auth-token', $this->session[$username])) {
+                $this->session['current_user'] = $username;
+                $this->save_session();
+                return true;
+            }
+        }
+        return false;
     }
 
     public function username() {
-        return $this->session['username'];
+        return $this->session['current_user'];
+    }
+
+    public function api_auth_token() {
+        return $this->session[$this->username()]['api-auth-token'];
     }
 
     public function last_status() {

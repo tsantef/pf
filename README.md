@@ -33,7 +33,8 @@ Missing Requirement: **The bin folder (/usr/local/bin) folder does not exists.**
 Download and install the pf command line tool
 
     curl -s https://raw.github.com/phpfog/pf/master/bin/installer | php
-    
+
+
 #### Troubleshoot Ubuntu Installation
 
 Error: **The program 'curl' is currently not installed.** You can install curl by typing:
@@ -57,6 +58,7 @@ Missing Requirement: **The bin folder (/usr/local/bin) folder does not exists.**
 1. Create the directory `/usr/local/bin`
 2. Make sure `/usr/local/bin` is in your path.
 
+
 ### Windows (with XAMPP, Git for Windows, and Git Bash)
 
     curl -s https://raw.github.com/phpfog/pf/master/bin/installer | php
@@ -70,6 +72,12 @@ Cause: The curl extension for php is not loaded.
 Fix: uncomment out the curl extension in the php.ini
 
     extension=php_curl.dll 
+
+
+## Uninstall
+
+	curl -s https://raw.github.com/phpfog/pf/master/bin/installer | php -- --uninstall
+
 
 ## Usage
 
@@ -135,7 +143,7 @@ Shows the current username logged in.
 
 #### Logout
 
-	pf logout
+	pf logout [username]
 	
 	
 	

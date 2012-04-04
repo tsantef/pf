@@ -1,18 +1,24 @@
 <?php
 function pf_logout($argv) {
-  // Prevent php errors when not logged in
-  error_reporting(E_ALL ^ E_NOTICE);
 
-  $phpfog   = new PHPFog(false);
-  $username = $phpfog->username();
+    $phpfog   = new PHPFog(false);
+    $username = array_shift($argv);
 
-  if ($username == null) {
-      failure_message("Not logged in");
-  } else {
-      $phpfog->logout();
-      success_message("Logged out {$username}");
-  }
+    if ($username == null) {
+        if ($phpfog->logout()) {
+            success_message("Logged out"); 
+        } else {
+            failure_message("Not logged in");
+        } 
+        return true;
+    }
 
-  return true;
+    if ($phpfog->logout($username)) {
+        success_message("Logged out {$username}");
+    } else {
+        failure_message("Not logged in");
+    } 
+
+    return true;
 }
 ?>

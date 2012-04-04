@@ -1,12 +1,19 @@
 <?php
 function pf_login($argv) {
-  // Prevent php errors when not logged in
-  error_reporting(E_ALL ^ E_NOTICE);
 
-  $phpfog = new PHPFog(false);
-  $username = array_shift($argv);
+    $phpfog = new PHPFog(false);
+    $username = array_shift($argv);
 
-  if ($phpfog->username() == null) {
+    if ($phpfog->username() == $username) {
+        info_message("Already logged in as {$phpfog->username()}.");
+        return true;
+    }
+
+    if ($phpfog->switch_user($username)) {
+        info_message("Switched to {$phpfog->username()}.");
+        return true;
+    }
+
     try {
         $has_api = $phpfog->login($username);
     } catch (PestJSON_Unauthorized $e) {
@@ -22,9 +29,6 @@ function pf_login($argv) {
     } else {
         die(wrap(red('Failed to login')));
     }
-  } else {
-      info_message("Already logged in as {$phpfog->username()}, please logout first.");
-      return true;
-  }
+
 }
 ?>
