@@ -187,11 +187,7 @@ function post_install() {
     $errors = array();
 
     if (!has_bin('pf')) {
-        if (PLATFORM!=WINDOWS) {
-            $errors[] = "Could not find pf in the path. Please add the following to your path: /usr/local/bin";
-        } else {
-            $errors[] = "Could not find pf in the path. Please add the following to your path: %USERPROFILE%\PHPFog\pf\bin";
-        }
+        $errors[] = (PLATFORM != WINDOWS) ? "Could not find pf in the path. Please add the following to your path: /usr/local/bin" : "Could not find pf in the path. Please add the following to your path: %USERPROFILE%\PHPFog\pf\bin";
     }
 
     if (!empty($errors)) {
@@ -275,11 +271,7 @@ function error($message) {
 }
 
 function colorize($str, $color) {
-    if (PLATFORM != WINDOWS) {
-        return sprintf("\033[0;".$color."m%s\033[0m", $str);
-    } else {
-        return $str;
-    }
+    return (PLATFORM != WINDOWS) ? sprintf("\033[0;".$color."m%s\033[0m", $str) : $str;
 }
 
 function platform() {
@@ -295,10 +287,7 @@ function platform() {
         case 'LINUX':
             return LINUX;
         default:
-            if (substr($os, 0, 3) === 'WIN') {
-                return WINDOWS;
-            }
-            return OTHER;
+            return substr($os, 0, 3) === 'WIN' ? WINDOWS : OTHER;
     }
 }
 

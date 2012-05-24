@@ -6,11 +6,13 @@ class PHPFog {
     public $session = null;
     private $session_path = null;
 
-    public function __construct($show_login=true) {
+    public function __construct($show_login = true) {
         $this->session_path = HOME.".pf-command-session";
         $this->load_session();
         $this->phpfog = new \PestJSON((isset($_ENV['PHPFOG_URL']) && $_ENV['PHPFOG_URL'] != '') ? $_ENV['PHPFOG_URL'] : "https://www.phpfog.com");
-        if ($show_login && $this->username() <> "") echo wrap("Running command as ".bwhite($this->username()));
+        if ($show_login && $this->username() != '') {
+            echo wrap("Running command as ".bwhite($this->username()));
+        }
     }
 
     # --- Clouds --- #
@@ -92,8 +94,10 @@ class PHPFog {
 
     # ---
 
-    public function login($username=null) {
-        if (empty($username)) $username = trim(prompt("PHP Fog Username: "));
+    public function login($username = null) {
+        if (empty($username)) {
+            $username = trim(prompt("PHP Fog Username: "));
+        }
         $password = trim(prompt("PHP Fog Password: ", true));
         $payload = array('login' => $username, 'password' => $password);
         $response = $this->phpfog->post("/user_session", $payload);
@@ -107,17 +111,19 @@ class PHPFog {
         return false;
     }
 
-    public function logout($username=null) {
+    public function logout($username = null) {
         if ($username == null) {
             @unlink($this->session_path);
-            return true; 
+            return true;
         } else {
             if (array_key_exists($username, $this->session)) {
-                if ($this->username() == $username) unset($this->session['current_user']);
+                if ($this->username() == $username) {
+                    unset($this->session['current_user']);
+                }
                 unset($this->session[$username]);
-                $this->save_session(); 
-                return true; 
-            }  
+                $this->save_session();
+                return true;
+            }
         }
         return false;
     }
