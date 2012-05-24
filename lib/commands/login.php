@@ -23,7 +23,7 @@ function pf_login($argv) {
         failure_message("Error: ".$e->getMessage());
         exit(1);
     }
-    if ($has_api) {
+    if (isset($has_api) && $has_api) {
         success_message("Logged in as {$phpfog->username()}");
         return true;
     } else {

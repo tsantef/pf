@@ -5,7 +5,9 @@ function pf_clone($argv) {
     $phpfog = new PHPFog();
 
     # Check if setup as been run
-    if ($phpfog->username() == "") $phpfog->login();
+    if ($phpfog->username() == "") {
+        $phpfog->login();
+    }
     $ssh_identifier = preg_replace("/[^A-Za-z0-9-]/", '-', $phpfog->username());
     $ssh_real_path = str_replace("/", DS, HOME.".ssh/".$ssh_identifier);
     $ssh_path = realpath(HOME.".ssh");

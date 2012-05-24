@@ -4,14 +4,16 @@ function pf_update($argv) {
 
     # Detect unclean repo
     execute("git status --porcelain", $output);
-    if ($output != "") {
+    if ($output != '') {
         echo wrap("There are uncommited changes.");
         $commit_message = prompt("Enter a commit message to check in changes: ");
         if ($commit_message != "") {
             system("git add -A");
             system("git commit -m \"$commit_message\"");
         } else {
-            if (strtolower(prompt("No commit message given, do you want to continue without commiting?[yN]: ")) != 'y') return true;
+            if (strtolower(prompt("No commit message given, do you want to continue without commiting?[yN]: ")) != 'y') {
+                return true;
+            }
         }
     }
 
@@ -22,11 +24,15 @@ function pf_update($argv) {
     if (!$has_submodules) {
         # delete local pf-deploy branch
         execute("git branch | grep 'pf-deploy' | wc -l", $output);
-        if (intval($output) > 0) execute("git branch -D pf-deploy");
+        if (intval($output) > 0) {
+            execute("git branch -D pf-deploy");
+        }
 
-        # delete remote pf-deploy branch 
+        # delete remote pf-deploy branch
         execute("git branch -r | grep 'pf-deploy' | wc -l", $output);
-        if (intval($output) > 0) execute("git push origin :pf-deploy", $ingnore);
+        if (intval($output) > 0) {
+            execute("git push origin :pf-deploy", $ignore);
+        }
 
         # push
         system("git push");

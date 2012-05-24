@@ -133,11 +133,7 @@ class PestJSON {
             'url' => $url
         );
 
-        if (isset($opts[CURLOPT_CUSTOMREQUEST])) {
-            $this->last_request['method'] = $opts[CURLOPT_CUSTOMREQUEST];
-        } else {
-            $this->last_request['method'] = 'GET';
-        }
+        $this->last_request['method'] = (isset($opts[CURLOPT_CUSTOMREQUEST])) ? $opts[CURLOPT_CUSTOMREQUEST] : 'GET';
 
         if (isset($opts[CURLOPT_POSTFIELDS])) {
             $this->last_request['data'] = $opts[CURLOPT_POSTFIELDS];
@@ -147,7 +143,7 @@ class PestJSON {
     }
 
     private function doRequest($curl) {
-        //curl_setopt($curl, CURLOPT_VERBOSE, true); 
+        //curl_setopt($curl, CURLOPT_VERBOSE, true);
         $body = curl_exec($curl);
         $meta = curl_getinfo($curl);
 

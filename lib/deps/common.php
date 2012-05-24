@@ -16,25 +16,21 @@ function failure_message($message) {
 }
 
 function echo_item($name, $id, $description = null) {
-    if ($description != null) {
-        echo wrap(bwhite($name)." - $description (ID: ".teal($id).")");
-    } else {
-        echo wrap(bwhite($name)." (ID: ".teal($id).")");
-    }
+    echo ($description != null) ? wrap(bwhite($name)." - $description (ID: ".teal($id).")") : wrap(bwhite($name)." (ID: ".teal($id).")");
 }
 
 function usecolor() {
-    if (!function_exists("posix_isatty")) { return false; }
-    if (!posix_isatty(STDOUT)) { return false; }
+    if (!function_exists("posix_isatty")) {
+        return false;
+    }
+    if (!posix_isatty(STDOUT)) {
+        return false;
+    }
     return true;
 }
 
 function colorize($str, $color) {
-    if (USECOLOR) {
-        return sprintf("\033[0;".$color."m%s\033[0m", $str);
-    } else {
-        return $str;
-    }
+    return USECOLOR ? sprintf("\033[0;".$color."m%s\033[0m", $str) : $str;
 }
 
 function bwhite($str) {
