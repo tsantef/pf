@@ -31,7 +31,7 @@ function pf_push($argv) {
         # delete remote pf-deploy branch
         execute("git branch -r | grep 'pf-deploy' | wc -l", $output);
         if (intval($output) > 0) {
-            execute("git push origin :pf-deploy", $ingnore);
+            execute("git push origin :pf-deploy", $ignore);
         }
 
         # push
