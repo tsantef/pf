@@ -20,11 +20,15 @@ function pf_setup($argv) {
     # Test Connection to PHPFog API
     $phpfog = new PHPFog(false);
     try {
-        $has_api = $phpfog->login();
+        $has_api = $phpfog->login($username);
+    } catch (PestJSON_Unauthorized $e) {
+        failure_message("Invalid login or password. Please try again.");
+        exit(1);
     } catch (Exception $e) {
-        failure_message("Something blew up during login!");
+        failure_message("Error: ".$e->getMessage());
+        exit(1);
     }
-    if (!$has_api) {
+    if (!isset($has_api) || !$has_api) {
         die(wrap(red('Failed to login')));
     }
 
