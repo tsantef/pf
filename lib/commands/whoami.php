@@ -13,4 +13,3 @@ function pf_whoami($argv) {
 
     return true;
 }
-?>

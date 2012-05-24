@@ -42,4 +42,3 @@ function pf_push($argv) {
 
     return true;
 }
-?>

@@ -26,6 +26,7 @@ function usecolor() {
     if (!posix_isatty(STDOUT)) {
         return false;
     }
+
     return true;
 }
 

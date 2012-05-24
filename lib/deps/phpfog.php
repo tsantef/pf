@@ -1,5 +1,6 @@
 <?php
-class PHPFog {
+class PHPFog
+{
     public $phpfog;
     public $username = null;
     public $api_auth_token = null;
@@ -17,34 +18,37 @@ class PHPFog {
 
     # --- Clouds --- #
 
-    function get_clouds() {
+    public function get_clouds() {
         $client = $this;
         $response = $this->api_call(function() use ($client) {
             return $client->phpfog->get("/dedicated_clouds", array("Api-Auth-Token: ".$client->api_auth_token()));
         });
+
         return $response;
     }
 
     # --- Apps --- #
 
-    function get_apps($cloud_id=null) {
+    public function get_apps($cloud_id=null) {
         $request_url = ($cloud_id != null) ? "/clouds/".$cloud_id."/apps" : "/apps";
         $client = $this;
         $response = $this->api_call(function() use ($client, $request_url) {
             return $client->phpfog->get($request_url, array("Api-Auth-Token: ".$client->api_auth_token()));
         });
+
         return $response;
     }
 
-    function get_app($app_id) {
+    public function get_app($app_id) {
         $client = $this;
         $response = $this->api_call(function() use ($client, $app_id) {
             return $client->phpfog->get("/apps/".$app_id, array("Api-Auth-Token: ".$client->api_auth_token()));
         });
+
         return $response;
     }
 
-    function get_app_id_by_name($app_name) {
+    public function get_app_id_by_name($app_name) {
         $app_id = null;
         $raw_app_name = strtolower($app_name);
         $apps = $this->get_apps();
@@ -54,41 +58,46 @@ class PHPFog {
                 break;
             }
         }
+
         return $app_id;
     }
 
-    function delete_app($app_id) {
+    public function delete_app($app_id) {
         $client = $this;
         $response = $this->api_call(function() use ($client, $app_id) {
             return $client->phpfog->delete("/apps/".$app_id, array("Api-Auth-Token: ".$client->api_auth_token()));
         });
+
         return $response;
     }
 
     # --- SSH Keys ---- #
 
-    function get_sshkeys() {
+    public function get_sshkeys() {
         $client = $this;
         $response = $this->api_call(function() use ($client) {
             return $client->phpfog->get("/ssh_keys", array("Api-Auth-Token: ".$client->api_auth_token()));
         });
+
         return $response;
     }
 
-    function new_sshkey($ssh_key_name, $ssh_key_key) {
+    public function new_sshkey($ssh_key_name, $ssh_key_key) {
         $client = $this;
         $payload = array('name' => $ssh_key_name, 'key' => $ssh_key_key );
         $response = $this->api_call(function() use ($client, $payload) {
             return $client->phpfog->post("/ssh_keys", $payload, array("Api-Auth-Token: ".$client->api_auth_token()));
         });
+
         return $response;
     }
 
-    function delete_sshkey($sshkey_id) {
+    public function delete_sshkey($sshkey_id) {
         $client = $this;
         $response = $this->api_call(function() use ($client, $sshkey_id) {
             return $client->phpfog->delete("/ssh_keys/".$sshkey_id, array("Api-Auth-Token: ".$client->api_auth_token()));
         });
+
         return $response;
     }
 
@@ -106,14 +115,17 @@ class PHPFog {
             $this->session[$this->username()] = array();
             $this->session[$this->username()]['api-auth-token'] = $response['api-auth-token'];
             $this->save_session();
+
             return true;
         }
+
         return false;
     }
 
     public function logout($username = null) {
         if ($username == null) {
             @unlink($this->session_path);
+
             return true;
         } else {
             if (array_key_exists($username, $this->session)) {
@@ -122,9 +134,11 @@ class PHPFog {
                 }
                 unset($this->session[$username]);
                 $this->save_session();
+
                 return true;
             }
         }
+
         return false;
     }
 
@@ -133,9 +147,11 @@ class PHPFog {
             if (array_key_exists('api-auth-token', $this->session[$username])) {
                 $this->session['current_user'] = $username;
                 $this->save_session();
+
                 return true;
             }
         }
+
         return false;
     }
 
@@ -178,17 +194,18 @@ class PHPFog {
         return $result;
     }
 
-    function get_api_error_message() {
+    public function get_api_error_message() {
         $resp = $this->last_response();
         $body = json_decode($resp['body']);
+
         return $body->message;
     }
 
-    function load_session() {
+    public function load_session() {
         $this->session = file_exists($this->session_path) ? json_decode(file_get_contents($this->session_path), true) : array();
     }
 
-    function save_session() {
+    public function save_session() {
         file_put_contents($this->session_path, json_encode($this->session));
     }
 }

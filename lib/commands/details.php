@@ -14,6 +14,7 @@ function pf_details($argv) {
         $app_id = $phpfog->get_app_id_by_name($raw_app_id);
         if ($app_id == null) {
             failure_message("No app found with the name: ".$raw_app_id);
+
             return true;
         }
     }
@@ -22,6 +23,7 @@ function pf_details($argv) {
         $app = $phpfog->get_app($app_id);
     } catch (PestJSON_NotFound $e) {
         failure_message($phpfog->get_api_error_message());
+
         return true;
     }
 
@@ -32,6 +34,6 @@ function pf_details($argv) {
     echo wrap("Git Url: ".bwhite($app['git_url']));
     echo wrap("DB Host: ".bwhite($app['db_host']));
     echo wrap("DB Name: ".bwhite($app['db_name']));
+
     return true;
 }
-?>
