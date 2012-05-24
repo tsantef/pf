@@ -187,7 +187,7 @@ function post_install() {
     $errors = array();
 
     if (!has_bin('pf')) {
-        $errors[] = (PLATFORM != WINDOWS) ? "Could not find pf in the path. Please add the following to your path: /usr/local/bin" : "Could not find pf in the path. Please add the following to your path: %USERPROFILE%\PHPFog\pf\bin";
+        $errors[] = "Could not find pf in the path. Please add the following to your path: ".((PLATFORM != WINDOWS) ? "/usr/local/bin" : "%USERPROFILE\PHPFog\pf\bin");
     }
 
     if (!empty($errors)) {
