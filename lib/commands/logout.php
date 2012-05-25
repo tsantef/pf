@@ -6,10 +6,11 @@ function pf_logout($argv) {
 
     if ($username == null) {
         if ($phpfog->logout()) {
-            success_message("Logged out"); 
+            success_message("Logged out");
         } else {
             failure_message("Not logged in");
-        } 
+        }
+
         return true;
     }
 
@@ -17,8 +18,7 @@ function pf_logout($argv) {
         success_message("Logged out {$username}");
     } else {
         failure_message("Not logged in");
-    } 
+    }
 
     return true;
 }
-?>

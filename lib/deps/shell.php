@@ -8,6 +8,7 @@ function execute($cmd, &$output = null) {
     if (is_array($output_array)) {
         $output = join("\n", $output_array);
     }
+
     return $exit_code;
 }
 
@@ -18,6 +19,7 @@ function temp_folder() {
     if (file_exists($tempfile)) {
         unlink($tempfile);
     }
+
     return $path;
 }
 
@@ -25,7 +27,7 @@ function temp_folder() {
 function cp_r($src, $dst) {
     $dir = opendir($src);
     @mkdir($dst);
-    while(false !== ($file = readdir($dir))) {
+    while (false !== ($file = readdir($dir))) {
         if (($file != '.') && ($file != '..')) {
             if (is_dir($src.'/'.$file)) {
                 cp_r($src.'/'.$file, $dst.'/'.$file);
@@ -66,6 +68,7 @@ function prompt($msg, $pw = false) {
         system('stty echo');
         echo PHP_EOL;
     }
+
     return $input;
 }
 
@@ -78,5 +81,6 @@ function has_bin($name) {
         exec("where /Q ".$name.".exe", $output, $exit_code);
     }
     unset($output);
+
     return $exit_code == 0;
 }

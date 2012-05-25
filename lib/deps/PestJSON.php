@@ -6,7 +6,8 @@
  *
  */
 
-class PestJSON {
+class PestJSON
+{
     public $curl_opts = array(
         CURLOPT_RETURNTRANSFER => true,  # return result instead of echoing
         CURLOPT_SSL_VERIFYPEER => false, # stop cURL from verifying the peer's certificate
@@ -105,6 +106,7 @@ class PestJSON {
     protected function processBody($body) {
         # The body of every GET/POST/PUT/DELETE response goes through
         # here prior to being returned.
+
         return json_decode($body, true);
     }
 
@@ -112,6 +114,7 @@ class PestJSON {
         # The body of every erroneous (non-2xx/3xx) GET/POST/PUT/DELETE
         # response goes through here prior to being used as the 'message'
         # of the resulting PestJSON_Exception
+
         return $body;
     }
 
@@ -205,9 +208,9 @@ class PestJSON {
             default:
                 if ($meta['http_code'] >= 400 && $meta['http_code'] <= 499) {
                     throw new PestJSON_ClientError($this->processError($body));
-                } else if ($meta['http_code'] >= 500 && $meta['http_code'] <= 599) {
+                } elseif ($meta['http_code'] >= 500 && $meta['http_code'] <= 599) {
                     throw new PestJSON_ServerError($this->processError($body));
-                } else if (!$meta['http_code'] || $meta['http_code'] >= 600) {
+                } elseif (!$meta['http_code'] || $meta['http_code'] >= 600) {
                     throw new PestJSON_UnknownResponse($this->processError($body));
                 }
         }
@@ -226,5 +229,3 @@ class PestJSON_Conflict extends PestJSON_ClientError {}
 class PestJSON_Gone extends PestJSON_ClientError {}
 class PestJSON_InvalidRecord extends PestJSON_ClientError {}
 class PestJSON_ServerError extends PestJSON_Exception {}
-
-?>

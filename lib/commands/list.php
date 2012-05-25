@@ -10,6 +10,7 @@ function pf_list($argv) {
             foreach ($items as $item) {
                 echo_item($item['name'], $item['id']);
             }
+
             return true;
         case "apps":
             try {
@@ -21,14 +22,15 @@ function pf_list($argv) {
             } catch (PestJSON_NotFound $e) {
                 failure_message($phpfog->get_api_error_message());
             }
+
             return true;
         case "sshkeys":
             foreach ($phpfog->get_sshkeys() as $item) {
                 echo_item($item['name'], $item['id']);
             }
+
             return true;
         default:
             return false;
     }
 }
-?>

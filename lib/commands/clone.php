@@ -32,6 +32,7 @@ function pf_clone($argv) {
         $app_id = $phpfog->get_app_id_by_name($raw_app_id);
         if ($app_id == null) {
             failure_message("No app found with the name: ".$raw_app_id);
+
             return true;
         }
     }
@@ -40,6 +41,7 @@ function pf_clone($argv) {
         $app = $phpfog->get_app($app_id);
     } catch (PestJSON_NotFound $e) {
         failure_message(wrap($phpfog->get_api_error_message()));
+
         return true;
     }
 
@@ -52,4 +54,3 @@ function pf_clone($argv) {
 
     return true;
 }
-?>

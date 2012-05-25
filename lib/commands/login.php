@@ -6,11 +6,13 @@ function pf_login($argv) {
 
     if ($phpfog->username() == $username) {
         info_message("Already logged in as {$phpfog->username()}.");
+
         return true;
     }
 
     if ($phpfog->switch_user($username)) {
         info_message("Switched to {$phpfog->username()}.");
+
         return true;
     }
 
@@ -25,10 +27,10 @@ function pf_login($argv) {
     }
     if (isset($has_api) && $has_api) {
         success_message("Logged in as {$phpfog->username()}");
+
         return true;
     } else {
         die(wrap(red('Failed to login')));
     }
 
 }
-?>

@@ -7,6 +7,7 @@ function pf_setup($argv) {
     if (!$has_git) {
         echo wrap("You need to install git before continuing!");
         echo wrap("After installing git run this setup in a new terminal window.");
+
         return true;
     }
 
@@ -14,6 +15,7 @@ function pf_setup($argv) {
     $has_ssh = has_bin('ssh-keygen');
     if (!$has_git) {
         echo wrap("You need to install ssh before continuing!");
+
         return true;
     }
 
@@ -64,7 +66,7 @@ function pf_setup($argv) {
     try {
         $phpfog->new_sshkey('', $pubkey);
         echo wrap(green("Successfully installed ssh key."));
-    } catch(PestJSON_ClientError $e) {
+    } catch (PestJSON_ClientError $e) {
         $resp = $phpfog->last_response();
         $body = json_decode($resp['body']);
         $message = $body->message;
@@ -82,4 +84,3 @@ function pf_setup($argv) {
 
     return true;
 }
-?>
