@@ -47,6 +47,7 @@ pull
 push
 setup
 update
+upgrade
 whoami
 
 EOF;

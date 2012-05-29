@@ -1,6 +1,5 @@
 <?php
 function pf_logout($argv) {
-
     $phpfog   = new PHPFog(false);
     $username = array_shift($argv);
 
