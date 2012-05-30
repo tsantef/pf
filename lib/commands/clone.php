@@ -1,7 +1,5 @@
 <?php
-
 function pf_clone($argv) {
-
     $phpfog = new PHPFog();
 
     # Check if setup as been run

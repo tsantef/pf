@@ -36,7 +36,6 @@ foreach ($argv as $arg) {
             break;
         case '--force':
             install();
-            post_install();
             break;
         case '--update':
             update();
@@ -55,7 +54,6 @@ foreach ($argv as $arg) {
 }
 if (check_deps()) {
     install();
-    post_install();
 }
 
 function wrap($msg) {
@@ -180,6 +178,8 @@ function install() {
             exit(1);
         }
     }
+
+    post_install();
 }
 
 # Post installation sanity checks
@@ -203,11 +203,6 @@ function post_install() {
 }
 
 function download($url, $path) {
-   /* $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $data = curl_exec($ch);
-    curl_close($ch);
-    file_put_contents($path, $data);*/
     exec(sprintf("curl -sL -o \"%s\" %s", $path, $url), $output, $exit_code);
 
     return true;
@@ -228,10 +223,8 @@ function uninstall() {
 
 # Update the user's pf installation
 function update() {
-    # Version check
-    # If different
-    # uninstall
-    # install
+    uninstall();
+    install();
 }
 
 function rrmdir($dir) {
@@ -258,7 +251,7 @@ function rrmdir($dir) {
             exit(1);
         }
     }
- }
+}
 
 function success($message) {
     echo wrap(colorize($message, 32));
@@ -312,6 +305,7 @@ Options
 --check      Display the environment info
 --force      Forces the installation
 --uninstall  Uninstall all associated files
+--update     Update the current install
 --edge       Installs the edge version
 
 EOF;

@@ -1,5 +1,4 @@
 <?php
-
 function pf_list($argv) {
     $phpfog = new PHPFog();
 

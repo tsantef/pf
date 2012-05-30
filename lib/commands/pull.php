@@ -1,5 +1,5 @@
 <?php
-function pf_pull($argv) {
+function pf_pull() {
     system("git pull");
 
     return true;
