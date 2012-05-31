@@ -156,7 +156,11 @@ class PHPFog
     }
 
     public function username() {
-        return $this->session['current_user'];
+        if (isset($this->session['current_user'])) {
+            return $this->session['current_user'];
+        } else {
+            return null;
+        }
     }
 
     public function api_auth_token() {

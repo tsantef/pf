@@ -3,6 +3,10 @@ function pf_login($argv) {
     $phpfog = new PHPFog(false);
     $username = array_shift($argv);
 
+    if (empty($username)) {
+        $username = trim(prompt("PHP Fog Username: "));
+    }
+
     if ($phpfog->username() == $username) {
         info_message("Already logged in as {$phpfog->username()}.");
 
