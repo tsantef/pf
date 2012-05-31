@@ -7,8 +7,6 @@ define("PKG_DIR", get_package_dir());
 define("INSTALL_DIR", str_replace("/", DS, PKG_DIR."/pf"));
 define("BIN_DIR", str_replace("/", DS, "/usr/local/bin"));
 
-global $edge; $edge  = false;
-
 array_shift($argv);
 $err;
 
