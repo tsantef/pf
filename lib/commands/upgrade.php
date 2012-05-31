@@ -1,6 +1,13 @@
 <?php
 function pf_upgrade() {
-    exec("php ".dirname(__FILE__)."/../../bin/installer -- --update");
-    success_message("Upgrade Successful.");
+    system("php ".dirname(__FILE__)."/../../bin/installer -- --update", $result);
+    if ($result !== 0) {
+        failure_message("Upgrade Failed.");
+
+        exit(1);
+    } else {
+        success_message("Upgrade Successful.");
+    }
+
     return true;
 }
