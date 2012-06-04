@@ -2,12 +2,27 @@
 define("PLATFORM", platform());
 define("DS", DIRECTORY_SEPARATOR);
 define("DOWNLOAD_URL", "https://github.com/phpfog/pf/zipball/master");
-define("PKG_DIR", str_replace('/', DS, "/usr/local/phpfog"));
+define("DOWNLOAD_EDGE_URL", "https://github.com/phpfog/pf/zipball/edge");
+define("PKG_DIR", get_package_dir());
 define("INSTALL_DIR", str_replace("/", DS, PKG_DIR."/pf"));
 define("BIN_DIR", str_replace("/", DS, "/usr/local/bin"));
 
+global $edge; $edge  = false;
+
 array_shift($argv);
 $err;
+
+function get_package_dir() {
+    switch (PLATFORM) {
+        case OSX:
+        case LINUX:
+            return str_replace('/', DS, "/usr/local/phpfog");
+            break;
+        case WINDOWS:
+            return str_replace('\\', DS, $_SERVER['USERPROFILE']."\\PHPFog");
+            break;
+    }
+}
 
 # Run through all arguments
 foreach ($argv as $arg) {
@@ -30,6 +45,9 @@ foreach ($argv as $arg) {
             uninstall();
             exit(0);
             break;
+        case '--edge':
+            $edge = true;
+            break;
         default:
             break;
     }
@@ -46,9 +64,10 @@ function clean($r = '', $error) {
     return preg_replace('/.*:/', $r, $error).'.';
 }
 
+# Pre-installation dependency checks
 function check_deps() {
     $errors = array();
-    $supported = array(OSX, LINUX);
+    $supported = array(OSX, LINUX, WINDOWS);
 
     if (!in_array(PLATFORM, $supported)) {
         $errors[] = "The current os (".PHP_OS.") is not supported";
@@ -66,8 +85,15 @@ function check_deps() {
         $errors[] = "Cannot find git executable.";
     }
 
+    # Linux only checks
+    if (PLATFORM!=WINDOWS) {
+        if (!is_dir(BIN_DIR)) {
+            $errors[] = "The bin folder (".BIN_DIR.") folder does not exists.";
+        }
+    }
+
     if (!empty($errors)) {
-        echo wrap('PF cannot be installed for the following reasons:');
+        echo wrap('PF cannot be installed for the following reason(s):');
         foreach ($errors as $error) {
             error("    ".$error);
         }
@@ -81,20 +107,23 @@ function check_deps() {
 
 # Install needed files
 function install() {
+    global $edge;
     $source_package = tempnam('/tmp', '');
+    unlink($source_package);
 
     info('Preparing installation directory ('.INSTALL_DIR.')...');
     rrmdir(PKG_DIR);
     if (!is_dir(INSTALL_DIR) && !@mkdir(INSTALL_DIR, 0777, true)) {
         $err = error_get_last();
-        error('Failed to create installation folder ('.clean(INSTALL_DIR.').', $err['message']));
+        error('Failed to create installation folder ('.clean(INSTALL_DIR.'.', $err['message']) .')');
         exit(1);
     }
 
     info('Downloading source package...');
-    if (!@copy(DOWNLOAD_URL, $source_package)) {
+    $download_url = ($edge==false) ? DOWNLOAD_URL : DOWNLOAD_EDGE_URL;
+    if (!@download($download_url, $source_package)) {
         $err = error_get_last();
-        error('Failed to download installation package.'.clean($err['message']));
+        error('Failed to download installation package. '.$err['message']);
         exit(1);
     }
 
@@ -142,13 +171,41 @@ function install() {
         exit(1);
     }
 
-    if (!@symlink(INSTALL_DIR.DS."bin".DS."pf", BIN_DIR.DS."pf")) {
-        $err = error_get_last();
-        error("Failed to make a symlink of ".clean(INSTALL_DIR.DS."bin".DS."pf.", $err['message']));
-        exit(1);
+    if (PLATFORM != WINDOWS) {
+        if (!@symlink(INSTALL_DIR.DS."bin".DS."pf", BIN_DIR.DS."pf")) {
+            $err = error_get_last();
+            error("Failed to make a symlink of ".clean(INSTALL_DIR.DS."bin".DS."pf.", $err['message']));
+            exit(1);
+        }
     }
 
-    success('Installation Successfull.');
+    post_install();
+}
+
+# Post installation sanity checks
+function post_install() {
+    $errors = array();
+
+    if (!has_bin('pf')) {
+        $errors[] = "Could not find pf in the path. Please add the following to your path: ".((PLATFORM != WINDOWS) ? "/usr/local/bin" : "%USERPROFILE\PHPFog\pf\bin");
+    }
+
+    if (!empty($errors)) {
+        echo wrap('Installation is complete however the following issue(s) may prevent pf from working:');
+        foreach ($errors as $error) {
+            error("    ".$error);
+        }
+        echo PHP_EOL;
+        return 0;
+    } else {
+        success('Installation Successful.');
+    }
+}
+
+function download($url, $path) {
+    exec(sprintf("curl -sL -o \"%s\" %s", $path, $url), $output, $exit_code);
+
+    return true;
 }
 
 # Remove associated files
@@ -166,10 +223,8 @@ function uninstall() {
 
 # Update the user's pf installation
 function update() {
-    # Version check
-    # If different
-    # uninstall
-    # install
+    uninstall();
+    install();
 }
 
 function rrmdir($dir) {
@@ -196,7 +251,7 @@ function rrmdir($dir) {
             exit(1);
         }
     }
- }
+}
 
 function success($message) {
     echo wrap(colorize($message, 32));
@@ -209,7 +264,7 @@ function error($message) {
 }
 
 function colorize($str, $color) {
-    return sprintf("\033[0;".$color."m%s\033[0m", $str);
+    return (PLATFORM != WINDOWS) ? sprintf("\033[0;".$color."m%s\033[0m", $str) : $str;
 }
 
 function platform() {
@@ -225,19 +280,20 @@ function platform() {
         case 'LINUX':
             return LINUX;
         default:
-            if (substr($os, 0, 3) === 'WIN') {
-                return WINDOWS;
-            }
-            return OTHER;
+            return substr($os, 0, 3) === 'WIN' ? WINDOWS : OTHER;
     }
 }
 
 function has_bin($name) {
     $output = null;
-    exec("which ".$name, $output);
-    $line = trim(current($output));
+    $exit_code = null;
+    if (PLATFORM != WINDOWS) {
+        exec("which ".$name, $output, $exit_code);
+    } else {
+        exec("where /Q ".$name, $output, $exit_code);
+    }
     unset($output);
-    return file_exists($line);
+    return $exit_code == 0;
 }
 
 function display_help() {
@@ -249,7 +305,8 @@ Options
 --check      Display the environment info
 --force      Forces the installation
 --uninstall  Uninstall all associated files
+--update     Update the current install
+--edge       Installs the edge version
 
 EOF;
 }
-?>

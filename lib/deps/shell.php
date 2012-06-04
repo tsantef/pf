@@ -8,16 +8,18 @@ function execute($cmd, &$output = null) {
     if (is_array($output_array)) {
         $output = join("\n", $output_array);
     }
+
     return $exit_code;
 }
 
 # Create a temporary folder
 function temp_folder() {
-    $tempfile=tempnam(__FILE__, '');
+    $tempfile = tempnam(__FILE__, '');
     $path = realpath($tempfile);
     if (file_exists($tempfile)) {
         unlink($tempfile);
     }
+
     return $path;
 }
 
@@ -25,9 +27,9 @@ function temp_folder() {
 function cp_r($src, $dst) {
     $dir = opendir($src);
     @mkdir($dst);
-    while(false !== ( $file = readdir($dir)) ) {
-        if (( $file != '.' ) && ( $file != '..' )) {
-            if ( is_dir($src.'/'.$file) ) {
+    while (false !== ($file = readdir($dir))) {
+        if (($file != '.') && ($file != '..')) {
+            if (is_dir($src.'/'.$file)) {
                 cp_r($src.'/'.$file, $dst.'/'.$file);
             } else {
                 copy($src.'/'.$file, $dst.'/'.$file);
@@ -58,13 +60,27 @@ function rm_rf($dir) {
 # Prompt for input
 function prompt($msg, $pw = false) {
     echo "$msg";
-    if ($pw == true) {
+    if (PLATFORM != WINDOWS && $pw == true) {
         system('stty -echo');
     }
     $input = trim(fgets(fopen('php://stdin', 'r')));
-    if ($pw == true) {
+    if (PLATFORM != WINDOWS && $pw == true) {
         system('stty echo');
         echo PHP_EOL;
     }
+
     return $input;
+}
+
+function has_bin($name) {
+    $output = null;
+    $exit_code = null;
+    if (PLATFORM != WINDOWS) {
+        exec("which ".$name, $output, $exit_code);
+    } else {
+        exec("where /Q ".$name.".exe", $output, $exit_code);
+    }
+    unset($output);
+
+    return $exit_code == 0;
 }

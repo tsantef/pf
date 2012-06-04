@@ -16,6 +16,7 @@ function pf_delete($argv) {
                 $app_id = $phpfog->get_app_id_by_name($raw_app_id);
                 if ($app_id == null) {
                     failure_message("No app found with the name: ".$raw_app_id);
+
                     return true;
                 }
             }
@@ -39,9 +40,9 @@ function pf_delete($argv) {
             } catch (PestJSON_NotFound $e) {
                 failure_message($phpfog->get_api_error_message());
             }
+
             return true;
         default:
             return false;
     }
 }
-?>
