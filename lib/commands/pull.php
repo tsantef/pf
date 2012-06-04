@@ -1,7 +1,6 @@
 <?php
-function pf_pull($argv) {
-    $phpfog = new PHPFog();
+function pf_pull() {
     system("git pull");
+
     return true;
 }
-?>

@@ -1,48 +1,44 @@
 <?php
 function pf_update($argv) {
-    # Copy repo to temp folder
-    $temp_git_folder = temp_folder();
-    cp_r(WORKING_DIR, $temp_git_folder);
+    system("git update-index -q --ignore-submodules --refresh");
 
-    $prefix = "cd ".$temp_git_folder." && ";
-
-    # Checkout pf-deploy branch
-    execute($prefix."git checkout -b pf-deploy");
-
-    # Get list of submodules
-    $submodule_list = "";
-    execute($prefix."git config -f .gitmodules --get-regexp '^submodule\..*\.path$'", $submodule_list);
-
-    # Submodule sync
-    execute($prefix."git submodule sync");
-
-    # Remove submodules
-    execute($prefix."git mv .gitmodules .gitmodules.remove");
-
-    foreach (split("\n", $submodule_list) as $value) {
-        preg_match("/^submodule\.(.+?)\.path (.+?)$/", $value, $matches);
-        $module_name = $matches[1];
-        $path = $matches[2];
-
-        # Delete sub module repo
-        rm_rf($temp_git_folder.'/'.$path."/.git");
-
-        # Clear git cache
-        execute($prefix."git rm --cached ".$path);
+    # Detect unclean repo
+    execute("git status --porcelain", $output);
+    if ($output != '') {
+        echo wrap("There are uncommited changes.");
+        $commit_message = prompt("Enter a commit message to check in changes: ");
+        if ($commit_message != "") {
+            system("git add -A");
+            system("git commit -m \"$commit_message\"");
+        } else {
+            if (strtolower(prompt("No commit message given, do you want to continue without commiting?[yN]: ")) != 'y') {
+                return true;
+            }
+        }
     }
 
-    # Add changes
-    execute($prefix."git add .");
-    execute($prefix."git add -u");
+    # Detect git summodules
+    execute("git config --list | grep '^submodule.' | wc -l", $output);
+    $has_submodules = intval($output) > 0;
 
-    # Commit changes
-    execute($prefix.'git commit -m "deploy"');
+    if (!$has_submodules) {
+        # delete local pf-deploy branch
+        execute("git branch | grep 'pf-deploy' | wc -l", $output);
+        if (intval($output) > 0) {
+            execute("git branch -D pf-deploy");
+        }
 
-    execute($prefix."git push origin HEAD --force");
+        # delete remote pf-deploy branch
+        execute("git branch -r | grep 'pf-deploy' | wc -l", $output);
+        if (intval($output) > 0) {
+            execute("git push origin :pf-deploy", $ignore);
+        }
 
-    # Clean up temp folder
-    rm_rf($temp_git_folder);
+        # push
+        system("git push");
+    } else {
+        return pf_deploy();
+    }
 
     return true;
 }
-?>

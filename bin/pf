@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 
+define("PLATFORM", platform());
 define("DS", DIRECTORY_SEPARATOR);
 define("WORKING_DIR", getcwd());
 
@@ -9,27 +10,45 @@ define("LIB_PATH", dirname(__FILE__).DS.'..'.DS.'lib'.DS);
 # Fix the arguments and count
 array_shift($argv);
 
+function platform() {
+    define("OSX", 'osx');
+    define('LINUX', 'linux');
+    define("WINDOWS", 'windows');
+    define("OTHER", 'other');
+
+    $os = strtoupper(PHP_OS);
+    switch ($os) {
+        case 'DARWIN':
+            return OSX;
+        case 'LINUX':
+            return LINUX;
+        default:
+            return substr($os, 0, 3) === 'WIN' ? WINDOWS : OTHER;
+    }
+}
+
 # Load everything after fixing arguments
 require_once LIB_PATH.'version.php';
 require_once LIB_PATH.'loader.php';
 
-if (!CommandLine::run($argv)) {
+if (empty($argv) || !CommandLine::run($argv)) {
     echo <<<EOF
 usage: pf <command>
 
 Commands:
-----------
+---------
 clone   (<appname> | <app_id>) [directory]
 delete  (app (<appname> | <app_id>) | sshkey <ssh_key_id>)
 details (<appname> | <app_id>)
-list    ((clouds | apps) <cloud_id>) | sshkeys
+list    (clouds | apps [cloud_id] | sshkeys)
+login   [username]
 logout
 pull
 push
 setup
 update
+upgrade
 whoami
 
 EOF;
 }
-?>
