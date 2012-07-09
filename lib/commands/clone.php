@@ -47,7 +47,7 @@ function pf_clone($argv) {
 
     echo wrap("git clone ".$repo_url);
     if (execute("git clone ".$repo_url.' '.$directory) > 0) {
-        echo failure_message("Failed to clone app. Run 'pf setup' to ensure you have your ssk key installed correctly.");
+        echo failure_message("Failed to clone app. Run 'pf setup' to ensure you have your ssh key installed correctly.");
     }
 
     return true;
