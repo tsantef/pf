@@ -5,7 +5,7 @@ class CommandLine
     public static function run($argv) {
         $arg = array_shift($argv);
         $cmd = "pf_".$arg;
-        $cmd_file = LIB_PATH."commands/".$arg.".php";
+        $cmd_file = fix_path(LIB_PATH."/commands/".$arg.".php");
 
         if (file_exists($cmd_file)) {
             require_once $cmd_file;

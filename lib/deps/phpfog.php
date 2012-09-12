@@ -8,12 +8,9 @@ class PHPFog
     private $session_path = null;
 
     public function __construct($show_login = true) {
-        $this->session_path = HOME.".pf-command-session";
+        $this->session_path = fix_path(HOME."/.pf-command-session");
         $this->load_session();
         $this->phpfog = new \PestJSON((isset($_ENV['PHPFOG_URL']) && $_ENV['PHPFOG_URL'] != '') ? $_ENV['PHPFOG_URL'] : "https://www.phpfog.com");
-        if ($show_login && $this->username() != '') {
-            echo wrap("Running command as ".bwhite($this->username()));
-        }
     }
 
     # --- Clouds --- #
@@ -29,8 +26,8 @@ class PHPFog
 
     # --- Apps --- #
 
-    public function get_apps($cloud_id=null) {
-        $request_url = ($cloud_id != null) ? "/clouds/".$cloud_id."/apps" : "/apps";
+    public function get_apps($cloud_id = null) {
+        $request_url = (null != $cloud_id) ? "/clouds/".$cloud_id."/apps" : "/apps";
         $client = $this;
         $response = $this->api_call(function() use ($client, $request_url) {
             return $client->phpfog->get($request_url, array("Api-Auth-Token: ".$client->api_auth_token()));
@@ -50,10 +47,8 @@ class PHPFog
 
     public function get_app_id_by_name($app_name) {
         $app_id = null;
-        $raw_app_name = strtolower($app_name);
-        $apps = $this->get_apps();
-        foreach ($apps as $app) {
-            if ($app['name'] == $raw_app_name) {
+        foreach ($apps = $this->get_apps() as $app) {
+            if ($app['name'] == strtolower($app_name)) {
                 $app_id = $app['id'];
                 break;
             }
@@ -156,11 +151,7 @@ class PHPFog
     }
 
     public function username() {
-        if (isset($this->session['current_user'])) {
-            return $this->session['current_user'];
-        } else {
-            return null;
-        }
+        return (isset($this->session['current_user'])) ? $this->session['current_user'] : null;
     }
 
     public function api_auth_token() {
@@ -184,14 +175,14 @@ class PHPFog
                 $this->login();
                 $result = is_object($block) ? $block() : $block;
             } catch (PestJSON_Unauthorized $e) {
-                failure_message("Invalid login or password. Please try again.");
+                failure("Invalid login or password. Please try again.");
                 exit(1);
             } catch (Exception $e) {
-                failure_message("Error: ".$e->getMessage());
+                failure("Error: {$e->getMessage()}");
                 exit(1);
             }
         } catch (PestJSON_BadRequest $e) {
-            failure_message("There was a problem making that request. Please try again.");
+            failure("There was a problem making that request. Please try again.");
             exit(1);
         }
 
