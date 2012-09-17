@@ -1,84 +1,137 @@
 <?php
 define("PLATFORM", platform());
-define("DS", DIRECTORY_SEPARATOR);
-define("DOWNLOAD_URL", "https://github.com/phpfog/pf/zipball/master");
-define("DOWNLOAD_EDGE_URL", "https://github.com/phpfog/pf/zipball/edge");
-define("PKG_DIR", get_package_dir());
-define("INSTALL_DIR", str_replace("/", DS, PKG_DIR."/pf"));
-define("BIN_DIR", str_replace("/", DS, "/usr/local/bin"));
+define("HOME", $_SERVER['HOME']);
 
-global $edge; $edge  = false;
+# Define config path for less declarations
+define("CONFIG", HOME."/.pfconfig");
+
+# Cut down on the number of checks
+define("NOT_WIN", (PLATFORM != WINDOWS) ? 1 : 0);
 
 array_shift($argv);
-$err;
+$verbose = 0;
 
+# Run through all arguments
+while($arg = array_shift($argv)) {
+    switch($arg) {
+        case '-h':
+        case '--help':
+            display_help();
+            exit(0);
+        case '-c':
+        case '--check':
+            $check = 1;
+            break;
+        case '-i':
+        case '--install-dir':
+            $install_dir = rtrim(pos($argv), '/');
+            unset($argv[key($argv)]);
+            break;
+        case '-e':
+        case '--exec-dir':
+            $exec_dir = rtrim(pos($argv), '/');
+            unset($argv[key($argv)]);
+            break;
+        case '-u':
+        case '--uninstall':
+            $uninstall = 1;
+            break;
+        case '-v':
+        case '--verbose':
+            $verbose = 1;
+            break;
+        default:
+            die(error("Error: Invalid flag '".$arg."'."));
+    }
+}
+
+if (!isset($install_dir)) {
+    $dir = rtrim(trim(prompt("Support files install directory [".get_package_dir()."]: ")), '/');
+    $install_dir = !empty($dir) ? $dir : get_package_dir();
+}
+if (!isset($exec_dir)) {
+    $dir = rtrim(trim(prompt("Path to install PF executable [/usr/local/bin]: ")), '/');
+    $exec_dir = !empty($dir) ? $dir : "/usr/local/bin";
+}
+
+# Define installation directory and location of pf executable
+define("INSTALL_DIR", fix_path($install_dir));
+define("BIN_DIR", fix_path($exec_dir));
+
+# Define location of pf executable
+define("EXE", BIN_DIR."/pf");
+
+# Define location of pf package (support files)
+define("PKG_DIR", INSTALL_DIR."/pf");
+
+if (isset($uninstall)) {
+    uninstall();
+    exit(0);
+} else if (isset($check)) {
+    exit(check_deps());
+} else if (isset($force)) {
+    install();
+} else if (check_deps()) {
+    install();
+}
+
+# Prompt for input
+function prompt($msg, $pw = false) {
+    echo $msg;
+    if (NOT_WIN && $pw) {
+        system("stty -echo");
+        $input = trim(fgets(fopen("php://stdin", "r")));
+        system("stty echo");
+        echo PHP_EOL;
+    } else {
+        $input = trim(fgets(fopen("php://stdin", "r")));
+    }
+
+    return $input;
+}
+
+# Fix paths, really only needed for Windows
+function fix_path($p) {
+    return str_replace('\\', DIRECTORY_SEPARATOR, $p);
+}
+
+# Default install location
 function get_package_dir() {
     switch (PLATFORM) {
         case OSX:
         case LINUX:
-            return str_replace('/', DS, "/usr/local/phpfog");
-            break;
+            return "/usr/local/phpfog";
         case WINDOWS:
-            return str_replace('\\', DS, $_SERVER['USERPROFILE']."\\PHPFog");
-            break;
+            return fix_path($_SERVER['USERPROFILE']."\\PHPFog");
     }
-}
-
-# Run through all arguments
-foreach ($argv as $arg) {
-    switch ($arg) {
-        case '--help':
-            display_help();
-            exit(0);
-            break;
-        case '--check':
-            exit(check_deps());
-            break;
-        case '--force':
-            install();
-            break;
-        case '--update':
-            update();
-            exit(0);
-            break;
-        case '--uninstall':
-            uninstall();
-            exit(0);
-            break;
-        case '--edge':
-            $edge = true;
-            break;
-        default:
-            break;
-    }
-}
-if (check_deps()) {
-    install();
 }
 
 function wrap($msg) {
     return $msg.PHP_EOL;
 }
+function ewrap($msg) {
+    echo $msg.PHP_EOL;
+}
 
-function clean($r = '', $error) {
-    return preg_replace('/.*:/', $r, $error).'.';
+function clean($r = '', $e) {
+    return preg_replace('/.*:/', $r, $e).'.';
 }
 
 # Pre-installation dependency checks
 function check_deps() {
-    $errors = array();
     $supported = array(OSX, LINUX, WINDOWS);
+    $errors = array();
 
     if (!in_array(PLATFORM, $supported)) {
-        $errors[] = "The current os (".PHP_OS.") is not supported";
+        $errors[] = "The current OS (".PHP_OS.") is not officially supported";
     }
 
     if (version_compare(PHP_VERSION, '5.3.1', '<')) {
-        $errors[] = "Minimum required php version not met.";
+        $errors[] = "Minimum required PHP version not met.";
     }
 
-    if (extension_loaded('curl') === false) {
-        $errors[] = "The curl extension for php is not loaded.";
+    if (!extension_loaded('curl')) {
+        $errors[] = "The curl extension for PHP is not loaded.";
     }
 
     if (!has_bin('git')) {
@@ -86,98 +139,52 @@ function check_deps() {
     }
 
     # Linux only checks
-    if (PLATFORM!=WINDOWS) {
-        if (!is_dir(BIN_DIR)) {
-            $errors[] = "The bin folder (".BIN_DIR.") folder does not exists.";
-        }
+    if (NOT_WIN && !is_dir(BIN_DIR)) {
+        $errors[] = "The bin folder (".BIN_DIR.") folder does not exist.";
     }
 
     if (!empty($errors)) {
-        echo wrap('PF cannot be installed for the following reason(s):');
-        foreach ($errors as $error) {
-            error("    ".$error);
+        notice('PF cannot be installed for the following reason(s):');
+        foreach ($errors as $e) {
+            error("    ".$e);
         }
-        echo PHP_EOL;
+
         return 0;
     }
+    success("All settings correct for using PF.");
 
-    success("All settings correct for using PF");
     return 1;
 }
 
 # Install needed files
 function install() {
-    global $edge;
-    $source_package = tempnam('/tmp', '');
-    unlink($source_package);
+    # Verbose check
+    $verbose = $GLOBALS['verbose'];
 
-    info('Preparing installation directory ('.INSTALL_DIR.')...');
-    rrmdir(PKG_DIR);
-    if (!is_dir(INSTALL_DIR) && !@mkdir(INSTALL_DIR, 0777, true)) {
-        $err = error_get_last();
-        error('Failed to create installation folder ('.clean(INSTALL_DIR.'.', $err['message']) .')');
-        exit(1);
-    }
+    # Make the install location if it doesn't exist yet
+    if (!is_dir(INSTALL_DIR)) {
+        info(INSTALL_DIR." doesn't exist, creating it now...");
 
-    info('Downloading source package...');
-    $download_url = ($edge==false) ? DOWNLOAD_URL : DOWNLOAD_EDGE_URL;
-    if (!@download($download_url, $source_package)) {
-        $err = error_get_last();
-        error('Failed to download installation package. '.$err['message']);
-        exit(1);
-    }
-
-    info('Unpacking...');
-    $zip = new ZipArchive;
-    $res = $zip->open($source_package);
-    if ($res === TRUE) {
-        if (!@$zip->extractTo(INSTALL_DIR)) {
-            $err = error_get_last();
-            error('Failed to extract download to '.clean(INSTALL_DIR.'.', $err['message']));
-            exit(1);
-        }
-        $zip->close();
-    } else {
-        $err = error_get_last();
-        error('Failed to open archive.'.clean($err['message']));
-        exit(1);
-    }
-
-    # Remove tempfile
-    @unlink($source_package);
-
-    # Remove the package files out of the package folder
-    $package_contents = glob(INSTALL_DIR.DS.'*');
-    if (1 === count($package_contents)) {
-        $inner_folder = $package_contents[0];
-        foreach (array_merge(glob($inner_folder.DS.'.*'), glob($inner_folder.DS.'*')) as $filename) {
-            $basename = basename($filename);
-            if ($basename != '.' && $basename != '..') {
-                rename($filename, INSTALL_DIR.DS.$basename);
-            }
-        }
-        if (!@rmdir($inner_folder)) {
-            $err = error_get_last();
-            error("Failed to remove ".clean($inner_folder.'.', $err['message']));
-            exit(1);
+        if (!@mkdir(INSTALL_DIR)) {
+            die(error("You do not have the permissions to create ".INSTALL_DIR));
         }
     }
+    chdir(INSTALL_DIR);
+    info("Cloning pf repo to ".PKG_DIR);
 
-    @unlink(BIN_DIR.DS."pf");
+    # Clone quietly
+    system("git clone -q git@github.com:phpfog/pf");
 
-    if (!@chmod(INSTALL_DIR.DS."bin".DS."pf", 0755)) {
-        $err = error_get_last();
-        error("Couldn't chmod ".clean(INSTALL_DIR.DS."bin".DS."pf.", $err['message']));
-        exit(1);
+    # Symlink the executable from the project's bin to the bin dir (exec dir)
+    if ($verbose) {
+        info("Creating symbolic link from '".PKG_DIR."/bin/pf' to '".EXE."'");
     }
+    symlink(fix_path(PKG_DIR."/bin/pf"), EXE);
 
-    if (PLATFORM != WINDOWS) {
-        if (!@symlink(INSTALL_DIR.DS."bin".DS."pf", BIN_DIR.DS."pf")) {
-            $err = error_get_last();
-            error("Failed to make a symlink of ".clean(INSTALL_DIR.DS."bin".DS."pf.", $err['message']));
-            exit(1);
-        }
+    if ($verbose) {
+        info("Writing paths to ".CONFIG);
     }
+    file_put_contents(CONFIG, json_encode(array("install_dir" => INSTALL_DIR, "bin_dir" => BIN_DIR)));
 
     post_install();
 }
@@ -187,53 +194,66 @@ function post_install() {
     $errors = array();
 
     if (!has_bin('pf')) {
-        $errors[] = "Could not find pf in the path. Please add the following to your path: ".((PLATFORM != WINDOWS) ? "/usr/local/bin" : "%USERPROFILE%\PHPFog\pf\bin");
+        $errors[] = 'Could not find pf in $PATH. Please add the following to your $PATH: '.fix_path(BIN_DIR);
     }
 
     if (!empty($errors)) {
-        echo wrap('Installation is complete however the following issue(s) may prevent pf from working:');
+        info('Installation is complete however the following issue(s) may prevent pf from working:');
         foreach ($errors as $error) {
             error("    ".$error);
         }
-        echo PHP_EOL;
+
         return 0;
     } else {
         success('Installation Successful.');
     }
 }
 
-function download($url, $path) {
-    exec(sprintf("curl -sL -o \"%s\" %s", $path, $url), $output, $exit_code);
-
-    return true;
-}
-
 # Remove associated files
 function uninstall() {
-    echo wrap("Removing pf executable file...");
-    if (@unlink(BIN_DIR.DS."pf")) {
-        echo wrap("Removing all pf support files...");
-        rrmdir(PKG_DIR);
-    } else {
-        $err = error_get_last();
-        error("Failed to remove ".clean(BIN_DIR.DS."pf.", $err['message']));
-        exit(1);
-    }
-}
+    # Verbose
+    $verbose = $GLOBALS['verbose'];
 
-# Update the user's pf installation
-function update() {
-    uninstall();
-    install();
+    # Check config file
+    if (file_exists(HOME."/.pfconfig")) {
+        $config = json_decode(file_get_contents(HOME."/.pfconfig"), true);
+    }
+    $pkg_dir = isset($config) ? $config['install_dir']."/pf" : PKG_DIR;
+    $exe = isset($config) ? $config['bin_dir']."/pf" : EXE;
+
+    # Check for executable
+    if (file_exists($exe)) {
+        info("Removing PF executable file".($verbose ? ": ".$exe : "..."));
+        # Remove executable
+        if (!@unlink($exe)) {
+            $err = error_get_last();
+            error("Failed to remove ".clean($exe.'.', $err['message']));
+        }
+    } else {
+        notice("PF executable ".($verbose ? "(".$exe.") " : '')."does not exist.");
+    }
+    # Check for support files
+    if (file_exists($pkg_dir)) {
+        info("Removing all PF support files".($verbose ? ": ".$pkg_dir : "..."));
+        rrmdir($pkg_dir);
+    } else {
+        notice("Support files ".($verbose ? "(".$pkg_dir.") " : '')."do not exist.");
+    }
+    # Check for config
+    if (file_exists(CONFIG)) {
+        info("Removing PF config file".($verbose ? ": ".CONFIG : "..."));
+        unlink(CONFIG);
+    } else {
+        notice("Config file ".($verbose ? "(".CONFIG.") " : "...")."does not exist.");
+    }
 }
 
 function rrmdir($dir) {
     if (is_dir($dir)) {
-        $objects = scandir($dir);
-        foreach ($objects as $obj) {
+        foreach ($objects = scandir($dir) as $obj) {
             if ($obj != '.' && $obj != '..') {
-                $path = $dir.DS.$obj;
-                if (filetype($path) == "dir") {
+                $path = $dir.'/'.$obj;
+                if (is_dir($path)) {
                     rrmdir($path);
                 } else {
                     if (!@unlink($path)) {
@@ -254,27 +274,29 @@ function rrmdir($dir) {
 }
 
 function success($message) {
-    echo wrap(colorize($message, 32));
+    ewrap(colorize($message, 32));
 }
 function info($message) {
-    echo wrap(colorize($message, 36));
+    ewrap(colorize($message, 36));
+}
+function notice($message) {
+    ewrap(colorize($message, 33));
 }
 function error($message) {
-    echo wrap(colorize($message, 31));
+    ewrap(colorize($message, 31));
 }
 
 function colorize($str, $color) {
-    return (PLATFORM != WINDOWS) ? sprintf("\033[0;".$color."m%s\033[0m", $str) : $str;
+    return NOT_WIN ? sprintf("\033[0;".$color."m%s\033[0m", $str) : $str;
 }
 
 function platform() {
     define("OSX", 'osx');
-    define('LINUX', 'linux');
+    define("LINUX", 'linux');
     define("WINDOWS", 'windows');
     define("OTHER", 'other');
 
-    $os = strtoupper(PHP_OS);
-    switch ($os) {
+    switch ($os = strtoupper(PHP_OS)) {
         case 'DARWIN':
             return OSX;
         case 'LINUX':
@@ -285,15 +307,13 @@ function platform() {
 }
 
 function has_bin($name) {
-    $output = null;
-    $exit_code = null;
-    if (PLATFORM != WINDOWS) {
+    if (NOT_WIN) {
         exec("which ".$name, $output, $exit_code);
     } else {
         exec("where /Q ".$name, $output, $exit_code);
     }
-    unset($output);
-    return $exit_code == 0;
+
+    return (0 === $exit_code) ? 1 : 0;
 }
 
 function display_help() {
@@ -301,12 +321,17 @@ function display_help() {
 PF Installer
 ------------
 Options
---help       Display this text
---check      Display the environment info
---force      Forces the installation
---uninstall  Uninstall all associated files
---update     Update the current install
---edge       Installs the edge version
+--help, -h              Display this text.
+
+--check, -c             Check if system meets requirements.
+
+--exec-dir, -e          Directory where pf executable is linked to (should be on \$PATH).
+
+--install-dir, -i       Directory where pf files are stored.
+
+--uninstall, -u         Uninstall all associated files.
+
+--verbose, -v           Make the install/uninstall process verbose.
 
 EOF;
 }

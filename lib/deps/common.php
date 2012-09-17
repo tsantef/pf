@@ -4,50 +4,47 @@ define("USECOLOR", usecolor());
 function wrap($msg) {
     return $msg.PHP_EOL;
 }
-
-function success_message($message) {
-    echo wrap(colorize($message, 32));
-}
-function info_message($message) {
-    echo wrap(colorize($message, 36));
-}
-function failure_message($message) {
-    echo wrap(colorize($message, 31));
+function ewrap($msg) {
+    echo $msg.PHP_EOL;
 }
 
-function echo_item($name, $id, $description = null) {
-    echo ($description != null) ? wrap(bwhite($name)." - $description (ID: ".teal($id).")") : wrap(bwhite($name)." (ID: ".teal($id).")");
+function success($msg) {
+    ewrap(green($msg));
+}
+function info($msg) {
+    ewrap(teal($msg));
+}
+function warning($msg) {
+    ewrap(colorize($msg, 33));
+}
+function failure($msg) {
+    ewrap(red($msg));
 }
 
 function usecolor() {
-    if (!function_exists("posix_isatty")) {
-        return false;
-    }
-    if (!posix_isatty(STDOUT)) {
-        return false;
-    }
-
-    return true;
+    return (!function_exists("posix_isatty") || !posix_isatty(STDOUT)) ? false : true;
 }
 
 function colorize($str, $color) {
     return USECOLOR ? sprintf("\033[0;".$color."m%s\033[0m", $str) : $str;
 }
-
 function bwhite($str) {
     return colorize($str, "1;37");
 }
-
 function teal($str) {
     return colorize($str, "36");
 }
-
 function red($str) {
     return colorize($str, "31");
 }
-
 function green($str) {
     return colorize($str, "32");
+}
+
+function echo_item($obj, $description = null) {
+    $name = $obj['name'];
+    $id = $obj['id'];
+    echo wrap(bwhite($name).(null != $description ? " - ".$description : '')." (ID: ".teal($id).')');
 }
 
 function pf_deploy() {
@@ -55,20 +52,20 @@ function pf_deploy() {
     $temp_git_folder = temp_folder();
     cp_r(WORKING_DIR, $temp_git_folder);
 
-    $prefix = "cd ".$temp_git_folder." && ";
+    $prefix = "cd ".$temp_git_folder." && git ";
 
     # Checkout pf-deploy branch
-    execute($prefix."git checkout -b pf-deploy");
+    execute($prefix."checkout -b pf-deploy");
 
     # Get list of submodules
-    $submodule_list = "";
-    execute($prefix."git config -f .gitmodules --get-regexp '^submodule\..*\.path$'", $submodule_list);
+    $submodule_list = '';
+    execute($prefix."config -f .gitmodules --get-regexp '^submodule\..*\.path$'", $submodule_list);
 
     # Submodule sync
-    execute($prefix."git submodule sync");
+    execute($prefix."submodule sync");
 
     # Remove submodules
-    execute($prefix."git mv .gitmodules .gitmodules.remove");
+    execute($prefix."mv .gitmodules .gitmodules.remove");
 
     foreach (split("\n", $submodule_list) as $value) {
         preg_match("/^submodule\.(.+?)\.path (.+?)$/", $value, $matches);
@@ -79,20 +76,24 @@ function pf_deploy() {
         rm_rf($temp_git_folder.'/'.$path."/.git");
 
         # Clear git cache
-        execute($prefix."git rm --cached ".$path);
+        execute($prefix."rm --cached ".$path);
     }
 
     # Add changes
-    execute($prefix."git add .");
-    execute($prefix."git add -u");
+    execute($prefix."add .");
+    execute($prefix."add -u");
 
     # Commit changes
-    execute($prefix.'git commit -m "deploy"');
+    execute($prefix.'commit -m "deploy"');
 
-    execute($prefix."git push origin HEAD --force");
+    execute($prefix."push origin HEAD --force");
 
     # Clean up temp folder
     rm_rf($temp_git_folder);
 
     return true;
+}
+
+function fix_path($p) {
+    return str_replace('\\', DIRECTORY_SEPARATOR, $p);
 }
