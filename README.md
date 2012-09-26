@@ -18,7 +18,7 @@ You can view all the installer options with the following command:
 
 Download and install the pf command line tool
 
-    curl -s https://raw.github.com/phpfog/pf/master/bin/installer | php
+    curl -s https://raw.github.com/phpfog/pf/master/bin/installer > installer && php installer
 
 #### Troubleshoot OSX Installation
 
@@ -32,7 +32,7 @@ Missing Requirement: **Cannot find git executable.**
 
 Download and install the pf command line tool
 
-    curl -s https://raw.github.com/phpfog/pf/master/bin/installer | php
+    curl -s https://raw.github.com/phpfog/pf/master/bin/installer > installer && php installer
 
 
 #### Troubleshoot Ubuntu Installation
@@ -56,7 +56,7 @@ Missing Requirement: **Cannot find git executable.** You can install git by typi
 
 ### Windows (with XAMPP, Git for Windows, and Git Bash)
 
-    curl -s https://raw.github.com/phpfog/pf/master/bin/installer | php
+    curl -s https://raw.github.com/phpfog/pf/master/bin/installer > installer && php installer
 
 #### Troubleshoot Windows Installation
 
@@ -71,7 +71,7 @@ Fix: uncomment out the curl extension in the php.ini
 
 ## Uninstall
 
-	curl -s https://raw.github.com/phpfog/pf/master/bin/installer | php -- -u
+	pf uninstall
 
 
 ## Usage
