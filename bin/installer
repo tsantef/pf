@@ -45,6 +45,12 @@ while($arg = array_shift($argv)) {
     }
 }
 
+if (file_exists(HOME."/.pfconfig")) {
+    $config = json_decode(file_get_contents(HOME."/.pfconfig"), true);
+    $install_dir = $config['install_dir'];
+    $exec_dir = $config['bin_dir'];
+}
+
 if (!isset($install_dir)) {
     $dir = rtrim(trim(prompt("Support files install directory [".get_package_dir()."]: ")), '/');
     $install_dir = !empty($dir) ? $dir : get_package_dir();
@@ -179,7 +185,7 @@ function install() {
     if ($verbose) {
         info("Creating symbolic link from '".PKG_DIR."/bin/pf' to '".EXE."'");
     }
-    symlink(fix_path(PKG_DIR."/bin/pf"), EXE);
+    @symlink(fix_path(PKG_DIR."/bin/pf"), EXE);
 
     if ($verbose) {
         info("Writing paths to ".CONFIG);
@@ -213,13 +219,8 @@ function post_install() {
 function uninstall() {
     # Verbose
     $verbose = $GLOBALS['verbose'];
-
-    # Check config file
-    if (file_exists(HOME."/.pfconfig")) {
-        $config = json_decode(file_get_contents(HOME."/.pfconfig"), true);
-    }
-    $pkg_dir = isset($config) ? $config['install_dir']."/pf" : PKG_DIR;
-    $exe = isset($config) ? $config['bin_dir']."/pf" : EXE;
+    $pkg_dir = INSTALL_DIR."/pf";
+    $exe = BIN_DIR."/pf";
 
     # Check for executable
     if (file_exists($exe)) {
