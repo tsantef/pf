@@ -179,7 +179,7 @@ function install() {
     info("Cloning pf repo to ".PKG_DIR);
 
     # Clone quietly
-    system("git clone -q git@github.com:phpfog/pf");
+    system("git clone -q https://github.com/phpfog/pf.git");
 
     # Symlink the executable from the project's bin to the bin dir (exec dir)
     if ($verbose) {
