@@ -1,5 +1,4 @@
 .DS_Store
-.pf-command-session
 *.deb
 /debpkg/DEBIAN/control
 /debpkg/usr/

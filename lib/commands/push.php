@@ -2,19 +2,18 @@
 function pf_push($argv) {
     system("git update-index -q --ignore-submodules --refresh");
 
-    # Detect unclean repo
+    # Detect dirty repo
     execute("git status --porcelain", $output);
-    if ($output != "") {
-        echo wrap("There are uncommited changes.");
-        $commit_message = prompt("Enter a commit message to check in changes: ");
-        if ($commit_message != "") {
-            system("git add -A");
-            system("git commit -m \"$commit_message\"");
-        } else {
-            if (strtolower(prompt("No commit message given, do you want to continue without commiting?[yN]: ")) != 'y') {
-                return true;
-            }
+    if (!empty($output)) {
+        ewrap("There are uncommited changes.");
+        $commit_message = '';
+        # If they don't provide a commit message, ask again and again
+        while(empty($commit_message)) {
+            $commit_message = prompt("Enter a commit message to check in changes: ");
         }
+        die(wrap($commit_message));
+        system("git add -A");
+        system("git commit -m \"$commit_message\"");
     }
 
     # Detect git summodules

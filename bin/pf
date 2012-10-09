@@ -2,13 +2,18 @@
 <?php
 
 define("PLATFORM", platform());
-define("DS", DIRECTORY_SEPARATOR);
 define("WORKING_DIR", getcwd());
+define("HOME", $_SERVER['HOME']);
 
-define("LIB_PATH", dirname(__FILE__).DS.'..'.DS.'lib'.DS);
+# Check .pfconfig, if doesn't exist, default to /usr/local/phpfog/pf/lib/
+if (file_exists(HOME."/.pfconfig")) {
+    $config = json_decode(file_get_contents(HOME."/.pfconfig"), true);
+}
+define("PKG_DIR", isset($config) ? $config['install_dir']."/pf" : "/usr/local/phpfog/pf");
+define("LIB_PATH", PKG_DIR."/lib");
 
-# Fix the arguments and count
-array_shift($argv);
+# Less platform checks
+define("NOT_WIN", (PLATFORM != WINDOWS));
 
 function platform() {
     define("OSX", 'osx');
@@ -16,8 +21,7 @@ function platform() {
     define("WINDOWS", 'windows');
     define("OTHER", 'other');
 
-    $os = strtoupper(PHP_OS);
-    switch ($os) {
+    switch ($os = strtoupper(PHP_OS)) {
         case 'DARWIN':
             return OSX;
         case 'LINUX':
@@ -28,8 +32,11 @@ function platform() {
 }
 
 # Load everything after fixing arguments
-require_once LIB_PATH.'version.php';
-require_once LIB_PATH.'loader.php';
+require_once LIB_PATH.'/version.php';
+require_once LIB_PATH.'/loader.php';
+
+# Fix argument list
+array_shift($argv);
 
 if (empty($argv) || !CommandLine::run($argv)) {
     echo <<<EOF
@@ -37,15 +44,16 @@ usage: pf <command>
 
 Commands:
 ---------
-clone   (<appname> | <app_id>) [directory]
+clone   [<appname> | <app_id>] [directory]
 delete  (app (<appname> | <app_id>) | sshkey <ssh_key_id>)
-details (<appname> | <app_id>)
+details [<appname> | <app_id>]
 list    (clouds | apps [cloud_id] | sshkeys)
 login   [username]
 logout
 pull
 push
 setup
+uninstall
 update
 upgrade
 whoami
