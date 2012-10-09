@@ -39,20 +39,17 @@ class PestJSON
         $curl_opts[CURLOPT_HEADER] = false;
         $curl_opts[CURLOPT_HTTPHEADER] = $headers;
 
-        $curl = $this->prepRequest($curl_opts, $url);
-        $body = $this->doRequest($curl);
-
-        return $this->processBody($body);
+        return $this->processBody($this->doRequest($this->prepRequest($curl_opts, $url)));
     }
 
     public function post($url, $data, $headers = array()) {
         $data = json_encode($data);
-
         $data = (is_array($data)) ? http_build_query($data) : $data;
+
+        $headers[] = 'Content-Length: '.strlen($data);
 
         $curl_opts = $this->curl_opts;
         $curl_opts[CURLOPT_CUSTOMREQUEST] = 'POST';
-        $headers[] = 'Content-Length: '.strlen($data);
         $curl_opts[CURLOPT_HEADER] = false;
         $curl_opts[CURLOPT_HTTPHEADER] = $headers;
         $curl_opts[CURLOPT_RETURNTRANSFER] = true;
@@ -60,27 +57,21 @@ class PestJSON
         $curl_opts[CURLOPT_POST] = true;
         $curl_opts[CURLOPT_POSTFIELDS] = $data;
 
-        $curl = $this->prepRequest($curl_opts, $url);
-        $body = $this->doRequest($curl);
-
-        return $this->processBody($body);
+        return $this->processBody($this->doRequest($this->prepRequest($curl_opts, $url)));
     }
 
     public function put($url, $data, $headers = array()) {
         $data = json_encode($data);
-
         $data = (is_array($data)) ? http_build_query($data) : $data;
+
+        $headers[] = 'Content-Length: '.strlen($data);
 
         $curl_opts = $this->curl_opts;
         $curl_opts[CURLOPT_CUSTOMREQUEST] = 'PUT';
-        $headers[] = 'Content-Length: '.strlen($data);
         $curl_opts[CURLOPT_HTTPHEADER] = $headers;
         $curl_opts[CURLOPT_POSTFIELDS] = $data;
 
-        $curl = $this->prepRequest($curl_opts, $url);
-        $body = $this->doRequest($curl);
-
-        return $this->processBody($body);
+        return $this->processBody($this->doRequest($this->prepRequest($curl_opts, $url)));
     }
 
     public function delete($url, $headers = array()) {
@@ -89,10 +80,7 @@ class PestJSON
         $curl_opts[CURLOPT_HEADER] = false;
         $curl_opts[CURLOPT_HTTPHEADER] = $headers;
 
-        $curl = $this->prepRequest($curl_opts, $url);
-        $body = $this->doRequest($curl);
-
-        return $this->processBody($body);
+        return $this->processBody($this->doRequest($this->prepRequest($curl_opts, $url)));
     }
 
     public function lastBody() {
@@ -148,11 +136,10 @@ class PestJSON
     private function doRequest($curl) {
         //curl_setopt($curl, CURLOPT_VERBOSE, true);
         $body = curl_exec($curl);
-        $meta = curl_getinfo($curl);
 
         $this->last_response = array(
             'body' => $body,
-            'meta' => $meta
+            'meta' => curl_getinfo($curl)
         );
 
         curl_close($curl);
@@ -163,7 +150,7 @@ class PestJSON
     }
 
     protected function checkLastResponseForError() {
-        if ( !$this->throw_exceptions) {
+        if (!$this->throw_exceptions) {
             return;
         }
 
@@ -174,7 +161,6 @@ class PestJSON
             return;
         }
 
-        $err = null;
         switch ($meta['http_code']) {
             case 400:
                 throw new PestJSON_BadRequest($this->processError($body));

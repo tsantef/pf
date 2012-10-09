@@ -1,16 +1,21 @@
 <?php
 function pf_login($argv) {
-    $phpfog = new PHPFog(false);
+    $phpfog = new PHPFog();
     $username = array_shift($argv);
 
+    # Prompt for username
+    if (empty($username)) {
+        $username = trim(prompt("PHP Fog Username: "));
+    }
+
     if ($phpfog->username() == $username) {
-        info_message("Already logged in as {$phpfog->username()}.");
+        info("Already logged in as {$phpfog->username()}.");
 
         return true;
     }
 
     if ($phpfog->switch_user($username)) {
-        info_message("Switched to {$phpfog->username()}.");
+        info("Switched to {$phpfog->username()}.");
 
         return true;
     }
@@ -18,18 +23,20 @@ function pf_login($argv) {
     try {
         $has_api = $phpfog->login($username);
     } catch (PestJSON_Unauthorized $e) {
-        failure_message("Invalid login or password. Please try again.");
+        failure("Invalid username or password. Please try again.");
+
         exit(1);
     } catch (Exception $e) {
-        failure_message("Error: ".$e->getMessage());
+        failure("Error: {$e->getMessage()}");
+
         exit(1);
     }
     if (isset($has_api) && $has_api) {
-        success_message("Logged in as {$phpfog->username()}");
+        success("Logged in as {$phpfog->username()}.");
 
         return true;
     } else {
-        die(wrap(red('Failed to login')));
+        die(failure('Failed to log in.'));
     }
 
 }
